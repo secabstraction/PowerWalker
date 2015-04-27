@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Antivenin;
 
@@ -32,8 +33,7 @@ namespace Antivenin
             return StackFrame;
         }
     }
-
-    public class Main
+    public class Antivenin
     {
         public static SYSTEM_INFO GetSysInfo()
         {
@@ -133,6 +133,43 @@ namespace Antivenin
             Marshal.FreeHGlobal(lpContextRecord);
             Kernel32.ResumeThread(hThread);
             return StackFrame;
+        }
+
+        public static bool LoadModules64(IntPtr hProcess)
+        {
+            //Initialize parameters for EPM
+            IntPtr[] hModules = new IntPtr[128];
+            GCHandle gch = GCHandle.Alloc(hModules, GCHandleType.Pinned); // Don't forget to free this later
+            IntPtr lphModules = gch.AddrOfPinnedObject();
+            uint cb = (uint)(Marshal.SizeOf(typeof(IntPtr)) * (hModules.Length));
+            uint cbNeeded = 0;
+
+            Psapi.EnumProcessModulesEx(hProcess, out lphModules, cb, out cbNeeded, ListModules.All);
+            int NumberOfModules = (Int32)(cbNeeded / (Marshal.SizeOf(typeof(IntPtr))));
+
+            MODULE_INFO ModInfo = new MODULE_INFO();
+
+            for (int i = 0; i < NumberOfModules; i++)
+            {
+                System.Text.StringBuilder lpFileName = new System.Text.StringBuilder(1024);
+                Psapi.GetModuleFileNameExW(hProcess, hModules[i], lpFileName, (uint)(lpFileName.Capacity));
+                Psapi.GetModuleInformation(hProcess, hModules[i], out ModInfo, (uint)(Marshal.SizeOf(ModInfo)));
+            }
+            return false;
+        }
+
+        public static bool LoadModules32(int ProcessId)
+        {
+            Process TargetProcess = Process.GetProcessById(ProcessId);
+            IntPtr hProcess = TargetProcess.Handle;
+            
+            foreach(ProcessModule Module in TargetProcess.Modules)
+            {
+                DbgHelp.SymLoadModuleEx(hProcess, IntPtr.Zero, Module.FileName, Module.ModuleName, Module.BaseAddress, 
+                                        Module.ModuleMemorySize, IntPtr.Zero, 0x4);
+            }
+
+            return true;
         }
     }
 }
