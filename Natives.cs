@@ -879,7 +879,7 @@ namespace Antivenin
         //EnumProcessModulesEx
         [DllImport(PsapiLib, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool EnumProcessModulesEx(IntPtr hProcess, out IntPtr lphModuleArray, uint cb,
+        public static extern bool EnumProcessModulesEx(IntPtr hProcess, [Out] IntPtr lphModuleArray, uint cb,
                                                        out uint cbNeeded, ListModules FilterFlag);
 
         //GetModuleInformation
