@@ -135,41 +135,33 @@ namespace Antivenin
             return StackFrame;
         }
 
-        public static bool LoadModules64(IntPtr hProcess)
+        public static bool LoadModules(IntPtr hProcess)
         {
             //Initialize parameters for EPM
-            IntPtr[] hModules = new IntPtr[128];
-            GCHandle gch = GCHandle.Alloc(hModules, GCHandleType.Pinned); // Don't forget to free this later
-            IntPtr lphModules = gch.AddrOfPinnedObject();
-            uint cb = (uint)(Marshal.SizeOf(typeof(IntPtr)) * (hModules.Length));
             uint cbNeeded = 0;
+            Psapi.EnumProcessModulesEx(hProcess, IntPtr.Zero, 0, out cbNeeded, ListModules.All);
+            IntPtr[] hModules = new IntPtr[(cbNeeded / IntPtr.Size)];
+            GCHandle GCh = GCHandle.Alloc(hModules, GCHandleType.Pinned); // Don't forget to free this later
+            IntPtr lphModules = GCh.AddrOfPinnedObject();
+            uint cb = cbNeeded;
 
-            Psapi.EnumProcessModulesEx(hProcess, out lphModules, cb, out cbNeeded, ListModules.All);
-            int NumberOfModules = (Int32)(cbNeeded / (Marshal.SizeOf(typeof(IntPtr))));
-
-            MODULE_INFO ModInfo = new MODULE_INFO();
+            Psapi.EnumProcessModulesEx(hProcess, lphModules, cb, out cbNeeded, ListModules.All);
+            int NumberOfModules = (int)(cbNeeded / (Marshal.SizeOf(typeof(IntPtr))));
 
             for (int i = 0; i < NumberOfModules; i++)
             {
-                System.Text.StringBuilder lpFileName = new System.Text.StringBuilder(1024);
+                MODULE_INFO ModInfo = new MODULE_INFO();
+                System.Text.StringBuilder lpFileName = new System.Text.StringBuilder(256);
+                System.Text.StringBuilder lpModuleBaseName = new System.Text.StringBuilder(32);
+
                 Psapi.GetModuleFileNameExW(hProcess, hModules[i], lpFileName, (uint)(lpFileName.Capacity));
                 Psapi.GetModuleInformation(hProcess, hModules[i], out ModInfo, (uint)(Marshal.SizeOf(ModInfo)));
+                Psapi.GetModuleBaseNameW(hProcess, hModules[i], lpModuleBaseName, (uint)(lpModuleBaseName.Capacity));
+                DbgHelp.SymLoadModuleEx(hProcess, IntPtr.Zero, lpFileName.ToString(), lpModuleBaseName.ToString(), 
+                                        ModInfo.lpBaseOfDll, (int)ModInfo.SizeOfImage, IntPtr.Zero, 0);
             }
+            GCh.Free();
             return false;
-        }
-
-        public static bool LoadModules32(int ProcessId)
-        {
-            Process TargetProcess = Process.GetProcessById(ProcessId);
-            IntPtr hProcess = TargetProcess.Handle;
-            
-            foreach(ProcessModule Module in TargetProcess.Modules)
-            {
-                DbgHelp.SymLoadModuleEx(hProcess, IntPtr.Zero, Module.FileName, Module.ModuleName, Module.BaseAddress, 
-                                        Module.ModuleMemorySize, IntPtr.Zero, 0x4);
-            }
-
-            return true;
         }
     }
 }
