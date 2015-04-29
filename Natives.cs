@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using System.Security.Permissions;
 
-namespace Antivenin
+namespace PowerWalker.Natives
 {
     #region Enums
     public enum ImageFileMachine : int
@@ -889,11 +889,15 @@ namespace Antivenin
 
         //GetModuleBaseNameW
         [DllImport(PsapiLib, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint GetModuleBaseNameW(IntPtr hProcess, IntPtr hModule, out IntPtr lpBaseName, uint nSize);
+        public static extern uint GetModuleBaseNameW(IntPtr hProcess, IntPtr hModule, System.Text.StringBuilder lpBaseName, uint nSize);
 
         //GetModuleFileNameExW
         [DllImport(PsapiLib, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern uint GetModuleFileNameExW(IntPtr hProcess, IntPtr hModule, System.Text.StringBuilder lpFilename, uint nSize);
+
+        //GetMappedFileNameW
+        [DllImport(PsapiLib, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern uint GetMappedFileNameW(IntPtr hProcess, IntPtr lpAddress, System.Text.StringBuilder lpFilename, uint nSize);
     }
 
     public class Advapi32
@@ -959,10 +963,10 @@ namespace Antivenin
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SymGetSearchPath(IntPtr hProcess, char[] SearchPath, uint SearchPathLength);
 
-        //UnDecorateSymbolName
+        //UnDecorateSymbolNameW
         [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Ansi)]
-        public static extern uint UnDecorateSymbolName(string DecoratedName, out IntPtr UnDecorateName, uint UndecoratedLength,
-                                                       uint Flags);
+        public static extern uint UnDecorateSymbolNameW(string DecoratedName, System.Text.StringBuilder UnDecoratedName, 
+                                                        uint UndecoratedLength, uint Flags);
 
         //StackWalk64
         [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Unicode)]
