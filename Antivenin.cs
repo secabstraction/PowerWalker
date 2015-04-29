@@ -1,11 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Antivenin;
+using System.Management.Automation;
+using PowerWalker.Natives;
 
 [assembly: CLSCompliant(false)]
 
-namespace Antivenin
+namespace PowerWalker
 {
     public class Helpers
     {
@@ -32,6 +33,12 @@ namespace Antivenin
 
             return StackFrame;
         }
+
+        public static long UlongToLong(ulong n1)
+        {
+            byte[] bytes = BitConverter.GetBytes(n1);
+            return BitConverter.ToInt64(bytes, 0);
+        }
     }
     public class Antivenin
     {
@@ -49,7 +56,7 @@ namespace Antivenin
             return Wow64Process;
         }
 
-        public static STACKFRAME64 StackWalk(uint ProcessId, uint ThreadId)
+        public static bool StackWalk(uint ProcessId, uint ThreadId)
         {
             IntPtr hProcess = Kernel32.OpenProcess(ProcessAccess.All, false, ProcessId);
             IntPtr hThread = Kernel32.OpenThread(ThreadAccess.AllAccess, false, ThreadId);
@@ -124,15 +131,23 @@ namespace Antivenin
             IntPtr lpStackFrame = Marshal.AllocHGlobal(Marshal.SizeOf(StackFrame));
             Marshal.StructureToPtr(StackFrame, lpStackFrame, false);
 
-            DbgHelp.StackWalk64(MachineType, hProcess, hThread, lpStackFrame, lpContextRecord, 
-                                null, FunctionTableAccessRoutine, GetModuleBaseRoutine, null);
+            for (int frameNum = 0; ; frameNum++)
+            {
+                System.Text.StringBuilder lpFilename = new System.Text.StringBuilder(256);
+                DbgHelp.StackWalk64(MachineType, hProcess, hThread, lpStackFrame, lpContextRecord,
+                                    null, FunctionTableAccessRoutine, GetModuleBaseRoutine, null);
+                StackFrame = (STACKFRAME64)Marshal.PtrToStructure(lpStackFrame, typeof(STACKFRAME64));
+                if (StackFrame.AddrReturn.Offset == 0) { break; }
+                IntPtr ReturnAddress = (IntPtr)Helpers.UlongToLong(StackFrame.AddrReturn.Offset);
+                Psapi.GetMappedFileNameW(hProcess, ReturnAddress, lpFilename, (uint)lpFilename.Capacity);
+                Console.WriteLine(StackFrame.AddrReturn.Offset.ToString() + " " + lpFilename.ToString());
+            }
 
             DbgHelp.SymCleanup(hProcess);
-            StackFrame = (STACKFRAME64)Marshal.PtrToStructure(lpStackFrame, typeof(STACKFRAME64));
             Marshal.FreeHGlobal(lpStackFrame);
             Marshal.FreeHGlobal(lpContextRecord);
             Kernel32.ResumeThread(hThread);
-            return StackFrame;
+            return true;
         }
 
         public static bool LoadModules(IntPtr hProcess)
@@ -163,5 +178,41 @@ namespace Antivenin
             GCh.Free();
             return false;
         }
+    }
+
+    [Cmdlet(VerbsDiagnostic.Resolve, "CallStack")]
+    public class ResolveCallStack : PSCmdlet
+    {
+        [Parameter(
+            Mandatory = true,
+            ValueFromPipelineByPropertyName = true,
+            ValueFromPipeline = true,
+            Position = 0,
+            HelpMessage = "ID of process whose threads will be walked.")]
+        [Alias("Pid", "p")]
+        uint ProcessId;
+
+        [Parameter(
+            ValueFromPipelineByPropertyName = true,
+            ValueFromPipeline = true,
+            Position = 1,
+            HelpMessage = "ID of thread whose callstack will be resolved.")]
+        [Alias("Tid", "t")]
+        uint ThreadId;
+
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+        }
+        protected override void ProcessRecord()
+        {
+            base.ProcessRecord();
+        }
+        protected override void EndProcessing()
+        {
+            base.EndProcessing();
+        }
+
+
     }
 }
