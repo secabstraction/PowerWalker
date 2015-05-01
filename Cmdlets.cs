@@ -7,10 +7,13 @@ using PowerWalker.Natives;
 
 namespace PowerWalker
 {
+
     //OpenProcess
     [Cmdlet(VerbsCommon.Get, "ProcessHandle")]
     public class GetProcessHandle : PSCmdlet
     {
+        private int[] ProcessIds;
+
         [Parameter(
             Mandatory = true,
             ValueFromPipelineByPropertyName = true,
@@ -23,7 +26,6 @@ namespace PowerWalker
             get { return ProcessIds; }
             set { ProcessIds = value; }
         }
-        private int[] ProcessIds;
 
         [Parameter(
             Mandatory = true,
@@ -118,7 +120,7 @@ namespace PowerWalker
             HelpMessage = "ID of process whose threads will be traced."
         )]
         [Alias("Pid", "p")]
-        int ProcessId
+        public int ProcessId
         { 
             get { return this.processId; }
             set { this.processId = value; }
@@ -132,7 +134,7 @@ namespace PowerWalker
             HelpMessage = "ID of thread whose stack will be traced."
         )]
         [Alias("Tid", "t")]
-        int ThreadId
+        public int ThreadId
         {
             get { return this.threadId; }
             set { this.threadId = value; }
