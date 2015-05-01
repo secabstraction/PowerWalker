@@ -93,37 +93,29 @@ namespace PowerWalker
     //Line: Number, filename (both SymGetLineFromAddr64)
     //File
     {
-        static Process[] Processes = Process.GetProcesses();
-        static string[] ProcessNames = Processes.Select( x => x.ProcessName).ToArray();
-        static string[] ProcessIds = Processes.Select(x => x.Id.ToString()).ToArray();
-
         [Parameter(
-            Mandatory = true,
+            Mandatory = false,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
-            ParameterSetName = "ByName",
             Position = 0,
             HelpMessage = "Name of process whose threads will be traced."
         )]
         [Alias("Process")]
-        [ValidateSet(ProcessNames)]
         string ProcessName;
 
         [Parameter(
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
-            ParameterSetName = "ById",
-            Position = 0,
+            Position = 1,
             HelpMessage = "ID of process whose threads will be traced."
         )]
         [Alias("Pid", "p")]
-        [ValidateSet(ProcessIds)]
         int ProcessId;
 
         [Parameter(
             Mandatory = true,
-            Position = 1,
+            Position = 2,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "ID of thread whose stack will be traced."
