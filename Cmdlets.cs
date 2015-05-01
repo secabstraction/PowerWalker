@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -93,6 +92,10 @@ namespace PowerWalker
     //Line: Number, filename (both SymGetLineFromAddr64)
     //File
     {
+        private string processName;
+        private int processId;
+        private int threadId;
+
         [Parameter(
             Mandatory = false,
             ValueFromPipeline = true,
@@ -101,7 +104,11 @@ namespace PowerWalker
             HelpMessage = "Name of process whose threads will be traced."
         )]
         [Alias("Process")]
-        string ProcessName;
+        public string ProcessName
+        { 
+            get { return this.processName; }
+            set { this.processName = value; }
+        }
 
         [Parameter(
             Mandatory = true,
@@ -111,7 +118,11 @@ namespace PowerWalker
             HelpMessage = "ID of process whose threads will be traced."
         )]
         [Alias("Pid", "p")]
-        int ProcessId;
+        int ProcessId
+        { 
+            get { return this.processId; }
+            set { this.processId = value; }
+        }
 
         [Parameter(
             Mandatory = true,
@@ -121,7 +132,11 @@ namespace PowerWalker
             HelpMessage = "ID of thread whose stack will be traced."
         )]
         [Alias("Tid", "t")]
-        int ThreadId;
+        int ThreadId
+        {
+            get { return this.threadId; }
+            set { this.threadId = value; }
+        }
 
         protected override void BeginProcessing()
         {
