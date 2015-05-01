@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -92,28 +93,43 @@ namespace PowerWalker
     //Line: Number, filename (both SymGetLineFromAddr64)
     //File
     {
-        [Parameter
-            (
-                Mandatory = true,
-                ValueFromPipelineByPropertyName = true,
-                ValueFromPipeline = true,
-                Position = 0,
-                HelpMessage = "ID of process whose threads will be traced."
-            )
-        ]
-        [Alias("Pid", "p")]
-        uint ProcessId;
+        static Process[] Processes = Process.GetProcesses();
+        static string[] ProcessNames = Processes.Select( x => x.ProcessName).ToArray();
+        static string[] ProcessIds = Processes.Select(x => x.Id.ToString()).ToArray();
 
-        [Parameter
-            (
-                ValueFromPipelineByPropertyName = true,
-                ValueFromPipeline = true,
-                Position = 1,
-                HelpMessage = "ID of thread whose stack will be traced."
-            )
-        ]
+        [Parameter(
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true,
+            ParameterSetName = "ByName",
+            Position = 0,
+            HelpMessage = "Name of process whose threads will be traced."
+        )]
+        [Alias("Process")]
+        [ValidateSet(ProcessNames)]
+        string ProcessName;
+
+        [Parameter(
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true,
+            ParameterSetName = "ById",
+            Position = 0,
+            HelpMessage = "ID of process whose threads will be traced."
+        )]
+        [Alias("Pid", "p")]
+        [ValidateSet(ProcessIds)]
+        int ProcessId;
+
+        [Parameter(
+            Mandatory = true,
+            Position = 1,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = "ID of thread whose stack will be traced."
+        )]
         [Alias("Tid", "t")]
-        uint ThreadId;
+        int ThreadId;
 
         protected override void BeginProcessing()
         {
