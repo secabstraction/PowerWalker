@@ -1,3 +1,2 @@
 # PowerWalker
---------------
-A set of cmdlets for obtaining an unmanaged stack trace and other dbg stuff.
+PowerShell cmdlets for obtaining an unmanaged stack trace and other dbg stuff.
