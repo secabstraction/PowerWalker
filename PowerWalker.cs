@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using PowerWalker.Natives;
 
@@ -7,14 +7,8 @@ using PowerWalker.Natives;
 
 namespace PowerWalker
 {
-    public class Helpers
+    public class Functions
     {
-        //StackWalk64 Callback Delegates
-        public delegate bool ReadProcessMemoryDelegate(IntPtr hProcess, ulong lpBaseAddress, IntPtr lpBuffer, uint nSize, IntPtr lpNumberOfBytesRead);
-        public delegate IntPtr SymFunctionTableAccess64Delegate(IntPtr hProcess, ulong AddrBase);
-        public delegate ulong SymGetModuleBase64Delegate(IntPtr hProcess, ulong Address);
-        public delegate ulong TranslateAddressProc64Delegate(IntPtr hProcess, IntPtr hThread, IntPtr lpAddress64);
-        
         public static STACKFRAME64 InitializeStackFrame64(AddressMode AddrMode, ulong OffsetPC, ulong OffsetFrame, ulong OffsetStack, ulong OffsetBStore)
         {
             STACKFRAME64 StackFrame = new STACKFRAME64();
@@ -34,22 +28,6 @@ namespace PowerWalker
         {
             byte[] bytes = BitConverter.GetBytes(n1);
             return BitConverter.ToInt64(bytes, 0);
-        }
-    }
-
-    public class Antivenin
-    {
-        public static SYSTEM_INFO GetSysInfo()
-        {
-            SYSTEM_INFO lpSystemInfo = new SYSTEM_INFO();
-            Kernel32.GetNativeSystemInfo(out lpSystemInfo);
-            return lpSystemInfo;
-        }
-        public static bool IsWow64(IntPtr hProcess)
-        {
-            bool Wow64Process = false;
-            Kernel32.IsWow64Process(hProcess, ref Wow64Process);
-            return Wow64Process;
         }
 
         public static bool LoadModules(IntPtr hProcess, ListModules ModuleType)
@@ -79,7 +57,22 @@ namespace PowerWalker
             return false;
         }
 
-        public static IMAGEHLP_SYMBOL64 GetSymbol(IntPtr hProcess, ulong Address)
+        public static uint GetProcessorType()
+        {
+            SYSTEM_INFO SystemInfo = new SYSTEM_INFO();
+            Kernel32.GetNativeSystemInfo(out SystemInfo);
+            uint ProcessorType = Convert.ToUInt32(SystemInfo.ProcessorType.ToString(), 16);
+            return ProcessorType;
+        }
+
+        public static bool IsWow64(IntPtr hProcess)
+        {
+            bool Wow64Process = false;
+            Kernel32.IsWow64Process(hProcess, ref Wow64Process);
+            return Wow64Process;
+        }
+
+        public static IMAGEHLP_SYMBOL64 GetSymbolFromAddress(IntPtr hProcess, ulong Address)
         {
             //Initialize params for SymGetSymFromAddr64
             IMAGEHLP_SYMBOL64 Symbol = new IMAGEHLP_SYMBOL64();
@@ -95,33 +88,33 @@ namespace PowerWalker
             return Symbol;
         }
 
-        public static bool StackWalk(uint ProcessId, uint ThreadId)
+        public static StackCall[] GetStackTrace(uint ProcessId, uint ThreadId)
         {
-            IntPtr hProcess = Kernel32.OpenProcess(ProcessAccess.All, false, ProcessId);
-            IntPtr hThread = Kernel32.OpenThread(ThreadAccess.AllAccess, false, ThreadId);
-
-            DbgHelp.SymInitialize(hProcess, null, false);
-            uint SymOptions = DbgHelp.SymGetOptions();
-
-            char[] buffer = new char[Constants.MAX_NAMELEN];
-            DbgHelp.SymGetSearchPath(hProcess, buffer, Constants.MAX_NAMELEN);
-
-            //Determine Process/Machine
-            bool Wow64 = false;
-            SYSTEM_INFO SystemInfo = GetSysInfo();
-            uint MachineType = Convert.ToUInt32(SystemInfo.ProcessorType.ToString(), 16);
-            if (MachineType == (uint)ImageFileMachine.AMD64 | MachineType == (uint)ImageFileMachine.IA64) { Wow64 = IsWow64(hProcess); }
+            List<StackCall> StackTrace = new List<StackCall>();
 
             //StackWalk64 Callbacks
-            Helpers.SymFunctionTableAccess64Delegate FunctionTableAccessRoutine = new Helpers.SymFunctionTableAccess64Delegate(DbgHelp.SymFunctionTableAccess64);
-            Helpers.SymGetModuleBase64Delegate GetModuleBaseRoutine = new Helpers.SymGetModuleBase64Delegate(DbgHelp.SymGetModuleBase64);
+            DbgHelp.SymFunctionTableAccess64Delegate FunctionTableAccessRoutine = new DbgHelp.SymFunctionTableAccess64Delegate(DbgHelp.SymFunctionTableAccess64);
+            DbgHelp.SymGetModuleBase64Delegate GetModuleBaseRoutine = new DbgHelp.SymGetModuleBase64Delegate(DbgHelp.SymGetModuleBase64);
 
             IntPtr lpContextRecord = new IntPtr();
             STACKFRAME64 StackFrame = new STACKFRAME64();
 
-            if (Wow64 | (MachineType == (uint)ImageFileMachine.I386))
+            IntPtr hProcess = Kernel32.OpenProcess(ProcessAccess.All, false, ProcessId);
+            IntPtr hThread = Kernel32.OpenThread(ThreadAccess.All, false, ThreadId);
+
+            DbgHelp.SymInitialize(hProcess, null, false);
+
+            //Determine Image & Processor types
+            bool Wow64 = false;
+            uint ProcessorType = GetProcessorType();
+            if (ProcessorType == (uint)ImageFileMachine.AMD64 | ProcessorType == (uint)ImageFileMachine.IA64)
             {
-                MachineType = (uint)ImageFileMachine.I386;
+                Wow64 = IsWow64(hProcess);
+            }
+
+            if (Wow64)
+            {
+                ProcessorType = (uint)ImageFileMachine.I386;
 
                 //Load 32-bit modules for symbol access
                 LoadModules(hProcess, ListModules._32Bit);
@@ -138,10 +131,32 @@ namespace PowerWalker
 
                 //Initialize Stack frame for first call to StackWalk64
                 ContextRecord = (X86_CONTEXT)Marshal.PtrToStructure(lpContextRecord, typeof(X86_CONTEXT));
-                StackFrame = Helpers.InitializeStackFrame64
+                StackFrame = InitializeStackFrame64
                              (AddressMode.Flat, ContextRecord.Eip, ContextRecord.Esp, ContextRecord.Ebp, new ulong());
             }
-            else if (MachineType == (uint)ImageFileMachine.AMD64)
+            else if (ProcessorType == (uint)ImageFileMachine.I386)
+            {
+                ProcessorType = (uint)ImageFileMachine.I386;
+
+                //Load 32-bit modules for symbol access
+                LoadModules(hProcess, ListModules._32Bit);
+
+                //Initialize an X86_CONTEXT
+                X86_CONTEXT ContextRecord = new X86_CONTEXT();
+                ContextRecord.ContextFlags = (uint)ContextFlags.X86ContextAll;
+                lpContextRecord = Marshal.AllocHGlobal(Marshal.SizeOf(ContextRecord));
+                Marshal.StructureToPtr(ContextRecord, lpContextRecord, false);
+
+                //Get context of thread
+                Kernel32.SuspendThread(hThread);
+                Kernel32.GetThreadContext(hThread, lpContextRecord);
+
+                //Initialize Stack frame for first call to StackWalk64
+                ContextRecord = (X86_CONTEXT)Marshal.PtrToStructure(lpContextRecord, typeof(X86_CONTEXT));
+                StackFrame = InitializeStackFrame64
+                             (AddressMode.Flat, ContextRecord.Eip, ContextRecord.Esp, ContextRecord.Ebp, new ulong());
+            }
+            else if (ProcessorType == (uint)ImageFileMachine.AMD64)
             {
                 //Load 64-bit modules for symbol access
                 LoadModules(hProcess, ListModules._64Bit);
@@ -151,17 +166,17 @@ namespace PowerWalker
                 ContextRecord.ContextFlags = (uint)ContextFlags.AMD64ContextAll;
                 lpContextRecord = Marshal.AllocHGlobal(Marshal.SizeOf(ContextRecord));
                 Marshal.StructureToPtr(ContextRecord, lpContextRecord, false);
-                
+
                 //Get context of thread
                 Kernel32.SuspendThread(hThread);
                 Kernel32.GetThreadContext(hThread, lpContextRecord);
 
                 //Initialize Stack frame for first call to StackWalk64
                 ContextRecord = (AMD64_CONTEXT)Marshal.PtrToStructure(lpContextRecord, typeof(AMD64_CONTEXT));
-                StackFrame = Helpers.InitializeStackFrame64
+                StackFrame = InitializeStackFrame64
                              (AddressMode.Flat, ContextRecord.Rip, ContextRecord.Rsp, ContextRecord.Rsp, new ulong());
             }
-            else if (MachineType == (uint)ImageFileMachine.IA64)
+            else if (ProcessorType == (uint)ImageFileMachine.IA64)
             {
                 //Load 64-bit modules for symbol access
                 LoadModules(hProcess, ListModules._64Bit);
@@ -171,14 +186,14 @@ namespace PowerWalker
                 ContextRecord.ContextFlags = (uint)ContextFlags.IA64ContextAll;
                 lpContextRecord = Marshal.AllocHGlobal(Marshal.SizeOf(ContextRecord));
                 Marshal.StructureToPtr(ContextRecord, lpContextRecord, false);
-                
+
                 //Get context of thread
                 Kernel32.SuspendThread(hThread);
                 Kernel32.GetThreadContext(hThread, lpContextRecord);
 
                 //Initialize Stack frame for first call to StackWalk64
                 ContextRecord = (IA64_CONTEXT)Marshal.PtrToStructure(lpContextRecord, typeof(IA64_CONTEXT));
-                StackFrame = Helpers.InitializeStackFrame64
+                StackFrame = InitializeStackFrame64
                              (AddressMode.Flat, ContextRecord.StIIP, ContextRecord.IntSp, ContextRecord.RsBSP, ContextRecord.IntSp);
             }
             //Marshal stack frame to unmanaged memory
@@ -188,33 +203,14 @@ namespace PowerWalker
             //Walk the Stack
             for (int frameNum = 0; ; frameNum++)
             {
-                //Initialize param for GetMappedFileNameW
-                System.Text.StringBuilder lpFilename = new System.Text.StringBuilder(256);
-
                 //Get stack frame
-                DbgHelp.StackWalk64(MachineType, hProcess, hThread, lpStackFrame, lpContextRecord,
-                                    null, FunctionTableAccessRoutine, GetModuleBaseRoutine, null);                
+                DbgHelp.StackWalk64(ProcessorType, hProcess, hThread, lpStackFrame, lpContextRecord,
+                                    null, FunctionTableAccessRoutine, GetModuleBaseRoutine, null);
                 StackFrame = (STACKFRAME64)Marshal.PtrToStructure(lpStackFrame, typeof(STACKFRAME64));
 
                 if (StackFrame.AddrReturn.Offset == 0) { break; } //End of stack reached
 
-                //Grab PC and Return address from stack frame
-                IntPtr PcAddress = (IntPtr)Helpers.UlongToLong(StackFrame.AddrPC.Offset);
-                IntPtr ReturnAddress = (IntPtr)Helpers.UlongToLong(StackFrame.AddrReturn.Offset);
-                
-                //Get FileName and Symbol for PC
-                Psapi.GetMappedFileNameW(hProcess, PcAddress, lpFilename, (uint)lpFilename.Capacity);
-                string PcFileName = lpFilename.ToString();
-                IMAGEHLP_SYMBOL64 PcSymbol = GetSymbol(hProcess, StackFrame.AddrPC.Offset);
-
-                //Get FileName and Symbol for Return
-                Psapi.GetMappedFileNameW(hProcess, ReturnAddress, lpFilename, (uint)lpFilename.Capacity);
-                string ReturnFileName = lpFilename.ToString();
-                IMAGEHLP_SYMBOL64 ReturnSymbol = GetSymbol(hProcess, StackFrame.AddrReturn.Offset);
-
-                //Write to console
-                Console.WriteLine("PC:     0x" + StackFrame.AddrPC.Offset.ToString("X8") + "\t" + (new string(PcSymbol.Name)) + "\t" + PcFileName.ToString());
-                Console.WriteLine("Return: 0x" + StackFrame.AddrReturn.Offset.ToString("X8") + "\t" + (new string(ReturnSymbol.Name)) + "\t" + ReturnFileName.ToString());                
+                StackTrace.Add(new StackCall(hProcess, StackFrame.AddrPC.Offset, StackFrame.AddrReturn.Offset));
             }
             DbgHelp.SymCleanup(hProcess);
             Marshal.FreeHGlobal(lpStackFrame);
@@ -222,7 +218,7 @@ namespace PowerWalker
             Kernel32.ResumeThread(hThread);
             Kernel32.CloseHandle(hThread);
             Kernel32.CloseHandle(hProcess);
-            return true;
-        }        
+            return StackTrace.ToArray();
+        }
     }
 }
