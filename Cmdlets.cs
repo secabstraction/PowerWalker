@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -7,11 +8,12 @@ using PowerWalker.Natives;
 
 namespace PowerWalker
 {
-
     //OpenProcess
     [Cmdlet(VerbsCommon.Get, "ProcessHandle")]
-    public class GetProcessHandle : PSCmdlet
+    public class GetProcessHandle : Cmdlet
     {
+        #region Parameters
+
         private int[] ProcessIds;
 
         [Parameter(
@@ -30,35 +32,24 @@ namespace PowerWalker
         [Parameter(
             Mandatory = true,
             Position = 1,
-            HelpMessage = "Level of access for this process handle."
+            HelpMessage = "Level of access for the process handle."
             )]
         [Alias("Access")]
         [ValidateNotNullOrEmpty]
         public ProcessAccess AccessLevel;
+        #endregion Parameters
 
         protected override void ProcessRecord()
         {
-            // If no process ids are passed to the cmdlet, get handles to all processes.
-            if (Id == null)
+            base.ProcessRecord();
+            foreach (int i in Id)
             {
-                // Write the process handle to the pipeline making them available to the next cmdlet. 
-                Process[] Processes = Process.GetProcesses();
-                foreach (Process p in Processes) {
-                    IntPtr Handle = Kernel32.OpenProcess(AccessLevel, false, (uint)p.Id);
-                    WriteObject(Handle, true);
-                }                   
-            }
-            else
-            {
-                // If process ids are passed to the cmdlet, get a handle to the process.
-                foreach (int i in Id)
-                {
-                    IntPtr Handle = Kernel32.OpenProcess(AccessLevel, false, (uint)i);
-                    WriteObject(Handle, true);
-                } 
+                IntPtr Handle = Kernel32.OpenProcess(AccessLevel, false, (uint)i);
+                WriteObject(Handle, true);
             }
         }
     }
+
 
     [Cmdlet(VerbsCommon.Get, "ProcessModules")]
     public class GetProcessModules : PSCmdlet { }
@@ -94,59 +85,81 @@ namespace PowerWalker
     //Line: Number, filename (both SymGetLineFromAddr64)
     //File
     {
-        private string processName;
-        private int processId;
-        private int threadId;
+        #region Parameters 
+
+        private List<string> processName = new List<string>();
+        private List<int> processId = new List<int>();
+        private List<int> threadId = new List<int>();
 
         [Parameter(
-            Mandatory = false,
+            Mandatory = true,
+            ParameterSetName = "ByName",
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
             Position = 0,
-            HelpMessage = "Name of process whose threads will be traced."
+            HelpMessage = "ID of process whose threads will be evaluated."
         )]
-        [Alias("Process")]
-        public string ProcessName
-        { 
+        public List<string> ProcessName
+        {
             get { return this.processName; }
             set { this.processName = value; }
         }
 
         [Parameter(
             Mandatory = true,
+            ParameterSetName = "ById",
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
-            Position = 1,
-            HelpMessage = "ID of process whose threads will be traced."
+            Position = 0,
+            HelpMessage = "ID of process whose threads will be evaluated."
         )]
-        [Alias("Pid", "p")]
-        public int ProcessId
-        { 
+        public List<int> ProcessId
+        {
             get { return this.processId; }
             set { this.processId = value; }
         }
 
         [Parameter(
-            Mandatory = true,
-            Position = 2,
+            ParameterSetName = "ById",
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
+            Position = 1,
             HelpMessage = "ID of thread whose stack will be traced."
         )]
-        [Alias("Tid", "t")]
-        public int ThreadId
+        public List<int> ThreadId
         {
             get { return this.threadId; }
             set { this.threadId = value; }
         }
 
+        #endregion Parameters
+
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
+            if (MyInvocation.BoundParameters.ContainsKey("ProcessName"))
+            {
+                foreach (string name in processName)
+                {
+                    processId.Concat(Process.GetProcessesByName(name).Select(x => x.Id).ToList());
+                }
+            }
         }
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
+            foreach (int pid in processId)
+            {
+                Process current = Process.GetProcessById(pid);
+                foreach (ProcessThread thread in current.Threads) 
+                {
+                    Functions.GetStackTrace((uint)pid, (uint)thread.Id);
+                }
+            }
+            if (MyInvocation.BoundParameters.ContainsKey("ThreadId"))
+            {
+                Functions.GetStackTrace((uint)processId[0], (uint)threadId[0]);
+            }
         }
         protected override void EndProcessing()
         {
