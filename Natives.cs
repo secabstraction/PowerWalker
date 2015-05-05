@@ -1,11 +1,11 @@
 using System;
+using System.Text;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
-using System.Security.Permissions;
 
 namespace PowerWalker.Natives
 {
     #region Enums
+
     public enum ImageFileMachine : int
     {
         I386 = 0x014c,
@@ -15,8 +15,13 @@ namespace PowerWalker.Natives
 
     public enum ProcessAccess : int
     {
+        Terminate = 0x000001,
+        CreateThread = 0x000002,
         VmRead = 0x000010,
+        VmWrite = 0x000020,
+        CreateProcess = 0x000080,
         QueryInformation = 0x000400,
+        QueryLimitedInformation = 0x001000,
         All = 0x1F0FFF
     }
 
@@ -24,7 +29,7 @@ namespace PowerWalker.Natives
     public enum ThreadAccess : int
     {
         None = 0,
-        AllAccess = 0x1F03FF,
+        All = 0x1F03FF,
         DirectImpersonation = 0x200,
         GetContext = 0x008,
         Impersonate = 0x100,
@@ -965,34 +970,34 @@ namespace PowerWalker.Natives
     [StructLayout(LayoutKind.Sequential)]
     public struct IMAGEHLP_MODULE64
     {
-        uint SizeOfStruct;
-        ulong BaseOfImage;
-        uint ImageSize;
-        uint TimeDateStamp;
-        uint CheckSum;
-        uint NumSyms;
+        public uint SizeOfStruct;
+        public ulong BaseOfImage;
+        public uint ImageSize;
+        public uint TimeDateStamp;
+        public uint CheckSum;
+        public uint NumSyms;
         SymType SymType;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-        char[] ModuleName;
+        public char[] ModuleName;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-        char[] ImageName;
+        public char[] ImageName;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-        char[] LoadedImageName;
+        public char[] LoadedImageName;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-        char[] LoadedPdbName;
-        uint CVSig;
+        public char[] LoadedPdbName;
+        public uint CVSig;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 260 * 3)]
-        char[] CVData;
-        uint PdbSig;
+        public char[] CVData;
+        public uint PdbSig;
         GUID PdbSig70;
-        uint PdbAge;
-        bool PdbUnmatched;
-        bool DbgUnmatched;
-        bool LineNumbers;
-        bool GlobalSymbols;
-        bool TypeInfo;
-        bool SourceIndexed;
-        bool Publics;
+        public uint PdbAge;
+        public bool PdbUnmatched;
+        public bool DbgUnmatched;
+        public bool LineNumbers;
+        public bool GlobalSymbols;
+        public bool TypeInfo;
+        public bool SourceIndexed;
+        public bool Publics;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1003,41 +1008,8 @@ namespace PowerWalker.Natives
         public uint Size;                   // estimated size of symbol, can be zero
         public uint Flags;                  // info about the symbols, see the SYMF defines
         public uint MaxNameLength;          // maximum size of symbol name in 'Name'
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 33)]
         public char[] Name;                   // symbol name (null terminated string)
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct CallstackEntry
-    {
-        ulong Offset;  // 0 = invalid entry
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        char[] Name;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        char[] UndecoratedName;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        char[] UndecoratedFullName;
-        ulong OffsetFromSmybol;
-        uint OffsetFromLine;
-        uint LineNumber;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        char[] LineFileName;
-        uint SymType;
-        string SymTypeString;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        char[] ModuleName;
-        ulong BaseOfImage;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        char[] LoadedImageName;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct API_VERSION
-    {
-        public ushort MajorVersion;
-        public ushort MinorVersion;
-        public ushort Revision;
-        public ushort Reserved;
     }
 
     //Extracted from ntdll with WinDbg
@@ -1065,24 +1037,6 @@ namespace PowerWalker.Natives
     #endregion Structs
 
     #region Functions
-
-    // SafeHandle to call CloseHandle
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public sealed class SafeWin32Handle : SafeHandleZeroOrMinusOneIsInvalid
-    {
-        public SafeWin32Handle() : base(true) { }
-
-        public SafeWin32Handle(IntPtr handle)
-            : base(true)
-        {
-            SetHandle(handle);
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            return Kernel32.CloseHandle(handle);
-        }
-    }
 
     public class Kernel32
     {
@@ -1123,18 +1077,28 @@ namespace PowerWalker.Natives
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetThreadContext(IntPtr hThread, IntPtr lpContext);
 
+        //SetThreadContext
+        [DllImport(Kernel32Lib, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetThreadContext(IntPtr hThread, IntPtr lpContext);
+
         //Wow64GetThreadContext
         [DllImport(Kernel32Lib, SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool Wow64GetThreadContext(IntPtr hThread, IntPtr lpContext);
 
-        //VirtualQuery
+        //Wow64SetThreadContext
         [DllImport(Kernel32Lib, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern ulong VirtualQuery(IntPtr lpAddress, MEMORY_BASIC_INFORMATION lpBuffer, ulong dwLength);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool Wow64SetThreadContext(IntPtr hThread, IntPtr lpContext);
 
         //VirtualQueryEx
         [DllImport(Kernel32Lib, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern ulong VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, MEMORY_BASIC_INFORMATION lpBuffer, ulong dwLength);
+
+        //VirtualProtectEx
+        [DllImport(Kernel32Lib, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern ulong VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, MemoryPageProtection flNewProtect, out MemoryPageProtection flOldProtect);
 
         //GetNativeSystemInfo
         [DllImport(Kernel32Lib, SetLastError = true, CharSet = CharSet.Unicode)]
@@ -1168,38 +1132,25 @@ namespace PowerWalker.Natives
 
         //GetModuleBaseNameW
         [DllImport(PsapiLib, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint GetModuleBaseNameW(IntPtr hProcess, IntPtr hModule, System.Text.StringBuilder lpBaseName, uint nSize);
+        public static extern uint GetModuleBaseNameW(IntPtr hProcess, IntPtr hModule, StringBuilder lpBaseName, uint nSize);
 
         //GetModuleFileNameExW
         [DllImport(PsapiLib, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint GetModuleFileNameExW(IntPtr hProcess, IntPtr hModule, System.Text.StringBuilder lpFilename, uint nSize);
+        public static extern uint GetModuleFileNameExW(IntPtr hProcess, IntPtr hModule, StringBuilder lpFilename, uint nSize);
 
         ////GetMappedFileNameW
         [DllImport(PsapiLib, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint GetMappedFileNameW(IntPtr hProcess, IntPtr lpAddress, System.Text.StringBuilder lpFilename, uint nSize);
-    }
-
-    public class Advapi32
-    {
-        //GetUserName
-        [DllImport("Advapi32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetUserName(System.Text.StringBuilder UserName, ref int nSize);
+        public static extern uint GetMappedFileNameW(IntPtr hProcess, IntPtr lpAddress, StringBuilder lpFilename, uint nSize);
     }
 
     public class DbgHelp
     {
         private const string DbgHelpLib = "dbghelp.dll";
 
-        //ImagehlpApiVersion
-        [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr ImagehlpApiVersion();
-
         //SymInitialize
         [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SymInitialize(IntPtr hProcess, string UserSearchPath,
-                                                [MarshalAs(UnmanagedType.Bool)] bool InvadeProcess);
+        public static extern bool SymInitialize(IntPtr hProcess, string UserSearchPath, [MarshalAs(UnmanagedType.Bool)] bool InvadeProcess);
 
         //SymGetOptions
         [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Unicode)]
@@ -1237,31 +1188,27 @@ namespace PowerWalker.Natives
         public static extern ulong SymLoadModuleEx(IntPtr hProcess, IntPtr hFile, string ImageName, string ModuleName,
                                                    IntPtr BaseOfDll, int DllSize, IntPtr Data, int Flags);
 
-        //SymGetSearchPath
-        [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Ansi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SymGetSearchPath(IntPtr hProcess, char[] SearchPath, uint SearchPathLength);
-
-        //UnDecorateSymbolName
-        [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Ansi)]
-        public static extern uint UnDecorateSymbolName(string DecoratedName, out IntPtr UnDecorateName, uint UndecoratedLength,
-                                                       uint Flags);
-
         //StackWalk64
         [DllImport(DbgHelpLib, SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool StackWalk64
         (
-            uint MachineType,                    //In
-            IntPtr hProcess,                       //In
-            IntPtr hThread,                        //In
-            IntPtr StackFrame,                     //In_Out
-            IntPtr ContextRecord,                  //In_Out
-            Helpers.ReadProcessMemoryDelegate ReadMemoryRoutine,              //_In_opt_
-            Helpers.SymFunctionTableAccess64Delegate FunctionTableAccessRoutine,     //_In_opt_ 
-            Helpers.SymGetModuleBase64Delegate GetModuleBaseRoutine,           //_In_opt_
-            Helpers.TranslateAddressProc64Delegate TranslateAddress                //_In_opt_
+            uint                                MachineType,                    //In
+            IntPtr                              hProcess,                       //In
+            IntPtr                              hThread,                        //In
+            IntPtr                              StackFrame,                     //In_Out
+            IntPtr                              ContextRecord,                  //In_Out
+            ReadProcessMemoryDelegate           ReadMemoryRoutine,              //_In_opt_
+            SymFunctionTableAccess64Delegate    FunctionTableAccessRoutine,     //_In_opt_ 
+            SymGetModuleBase64Delegate          GetModuleBaseRoutine,           //_In_opt_
+            TranslateAddressProc64Delegate      TranslateAddress                //_In_opt_
         );
+
+        //StackWalk64 Callback Delegates
+        public delegate bool ReadProcessMemoryDelegate(IntPtr hProcess, ulong lpBaseAddress, IntPtr lpBuffer, uint nSize, IntPtr lpNumberOfBytesRead);
+        public delegate IntPtr SymFunctionTableAccess64Delegate(IntPtr hProcess, ulong AddrBase);
+        public delegate ulong SymGetModuleBase64Delegate(IntPtr hProcess, ulong Address);
+        public delegate ulong TranslateAddressProc64Delegate(IntPtr hProcess, IntPtr hThread, IntPtr lpAddress64);
     }
 
     #endregion Functions
