@@ -50,16 +50,41 @@ namespace PowerWalker
         }
     }
 
-
     [Cmdlet(VerbsCommon.Get, "ProcessModules")]
-    public class GetProcessModules : PSCmdlet { }
+    public class GetProcessModules : Cmdlet { }
     //EnumProcessModulesEx
     //32, 64, All
 
     [Cmdlet(VerbsCommon.Set, "SymbolPath")]
-    public class SetSymbolPath : PSCmdlet { }
+    public class SetSymbolPath : Cmdlet { }
     //http, Microsoft Public
     //do more work here...
+
+    [Cmdlet(VerbsLifecycle.Stop, "Thread")]
+    public class StopThread : Cmdlet
+    {
+        private uint threadId;
+
+        [Parameter(
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true,
+            Position = 0,
+            HelpMessage = "ID of thread whose stack will be traced."
+        )]
+        public uint ThreadId
+        {
+            get { return this.threadId; }
+            set { this.threadId = value; }
+        }
+
+        protected override void ProcessRecord()
+        {
+            base.ProcessRecord();
+            IntPtr hThread = Kernel32.OpenThread(ThreadAccess.Terminate, false, threadId);
+            Kernel32.TerminateThread(hThread, 0);
+        }
+    }
 
     [Cmdlet(VerbsData.Initialize, "SymbolHandler")]
     public class InitializeSymbolHandler : PSCmdlet { }
@@ -78,55 +103,34 @@ namespace PowerWalker
     //SymGetModuleInfo
     //GetModuleInfo
 
-    [Cmdlet(VerbsCommon.Get, "StackTrace")]
-    public class GetStackTrace : PSCmdlet
-    //Addr
-    //Symbol: name (SymGetSymFromAddr64), undName, undFullName
-    //Line: Number, filename (both SymGetLineFromAddr64)
-    //File
+    [Cmdlet(VerbsDiagnostic.Trace, "Thread")]
+    public class TraceThread : Cmdlet
     {
-        #region Parameters 
+        #region Parameters
 
-        private List<string> processName = new List<string>();
-        private List<int> processId = new List<int>();
-        private List<int> threadId = new List<int>();
+        private uint processId;
+        private uint threadId;
 
         [Parameter(
             Mandatory = true,
-            ParameterSetName = "ByName",
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
             Position = 0,
             HelpMessage = "ID of process whose threads will be evaluated."
         )]
-        public List<string> ProcessName
-        {
-            get { return this.processName; }
-            set { this.processName = value; }
-        }
-
-        [Parameter(
-            Mandatory = true,
-            ParameterSetName = "ById",
-            ValueFromPipeline = true,
-            ValueFromPipelineByPropertyName = true,
-            Position = 0,
-            HelpMessage = "ID of process whose threads will be evaluated."
-        )]
-        public List<int> ProcessId
+        public uint ProcessId
         {
             get { return this.processId; }
             set { this.processId = value; }
         }
 
         [Parameter(
-            ParameterSetName = "ById",
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
             Position = 1,
             HelpMessage = "ID of thread whose stack will be traced."
         )]
-        public List<int> ThreadId
+        public uint ThreadId
         {
             get { return this.threadId; }
             set { this.threadId = value; }
@@ -134,36 +138,31 @@ namespace PowerWalker
 
         #endregion Parameters
 
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-            if (MyInvocation.BoundParameters.ContainsKey("ProcessName"))
-            {
-                foreach (string name in processName)
-                {
-                    processId.Concat(Process.GetProcessesByName(name).Select(x => x.Id).ToList());
-                }
-            }
-        }
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
-            foreach (int pid in processId)
+
+            if (processId != 0 & threadId == 0)
             {
-                Process current = Process.GetProcessById(pid);
-                foreach (ProcessThread thread in current.Threads) 
+                Process p = Process.GetProcessById((int)processId);
+                foreach (ProcessThread thread in p.Threads)
                 {
-                    Functions.GetStackTrace((uint)pid, (uint)thread.Id);
+                    StackTrace StackTrace = new StackTrace(processId, (uint)thread.Id);
+                    foreach (StackCall Call in StackTrace.Calls)
+                {
+                    WriteObject(Call);
+                }
+                } 
+            }
+
+            if (processId != 0 & threadId != 0)
+            {
+                StackTrace StackTrace = new StackTrace(processId, threadId);
+                foreach (StackCall Call in StackTrace.Calls)
+                {
+                    WriteObject(Call);
                 }
             }
-            if (MyInvocation.BoundParameters.ContainsKey("ThreadId"))
-            {
-                Functions.GetStackTrace((uint)processId[0], (uint)threadId[0]);
-            }
-        }
-        protected override void EndProcessing()
-        {
-            base.EndProcessing();
         }
     }
 }
