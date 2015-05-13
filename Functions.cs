@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using PowerWalker.Natives;
 
@@ -74,14 +73,49 @@ namespace PowerWalker
             //Initialize params for SymGetSymFromAddr64
             IMAGEHLP_SYMBOL64 Symbol = new IMAGEHLP_SYMBOL64();
             Symbol.SizeOfStruct = (uint)Marshal.SizeOf(Symbol);
-            Symbol.MaxNameLength = 32;
+            Symbol.MaxNameLength = 33;
+
             IntPtr lpSymbol = Marshal.AllocHGlobal(Marshal.SizeOf(Symbol));
             Marshal.StructureToPtr(Symbol, lpSymbol, false);
             ulong Offset = 0;
+
             DbgHelp.SymGetSymFromAddr64(hProcess, Address, Offset, lpSymbol);
+            
             Symbol = (IMAGEHLP_SYMBOL64)Marshal.PtrToStructure(lpSymbol, typeof(IMAGEHLP_SYMBOL64));
             Marshal.FreeHGlobal(lpSymbol);
+
             return Symbol;
+        }
+
+        public static IntPtr GetPEBAddress(uint ProcessId)
+        {
+            //Get a handle to our own process
+            IntPtr hProc = Kernel32.OpenProcess(ProcessAccess.All, false, ProcessId);
+            
+            //Allocate memory for a new PROCESS_BASIC_INFORMATION structure
+            IntPtr pbi = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)));
+            
+            //Allocate memory for a long
+            IntPtr outLong = Marshal.AllocHGlobal(sizeof(long));
+            IntPtr outPtr = IntPtr.Zero;
+
+            NtStatus queryStatus = 0;
+
+            //Store API call success in a boolean
+            queryStatus = NtDll.NtQueryInformationProcess(hProc, ProcessInfo.ProcessBasicInformation, pbi, (uint)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)), outLong);
+
+            //Close handle and free allocated memory
+            Kernel32.CloseHandle(hProc);
+            Marshal.FreeHGlobal(outLong);
+
+            //STATUS_SUCCESS = 0, so if API call was successful querySuccess should contain 0 ergo we reverse the check.
+            outPtr = ((PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pbi, typeof(PROCESS_BASIC_INFORMATION))).PebBaseAddress;
+
+            //Free allocated space
+            Marshal.FreeHGlobal(pbi);
+
+            //Return pointer to PEB base address
+            return outPtr;
         }
     }
 }
