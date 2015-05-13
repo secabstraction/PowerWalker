@@ -21,10 +21,10 @@ namespace PowerWalker
 
             IntPtr PcOffset = (IntPtr)Functions.UlongToLong(AddrPC);
             Psapi.GetMappedFileNameW(hProcess, PcOffset, ReturnedString, (uint)ReturnedString.Capacity);
-            MappedFile = ReturnedString.ToString();
+            this.MappedFile = ReturnedString.ToString();
 
             IMAGEHLP_SYMBOL64 PcSymbol = Functions.GetSymbolFromAddress(hProcess, AddrPC);
-            Symbol = new string(PcSymbol.Name);
+            this.Symbol = new string(PcSymbol.Name);
         }
     }
 }
