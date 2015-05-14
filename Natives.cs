@@ -569,13 +569,6 @@ namespace PowerWalker.Natives
         NumSymTypes
     }
     
-    public enum CallstackEntryType : uint
-    {
-        FirstEntry,
-        NextEntry,
-        LastEntry
-    }
-    
     [Flags]
     public enum ListModules : uint
     {
