@@ -2,13 +2,13 @@ function Import-ModuleSymbols ($hProcess, $ModuleType) {
 
     #Initialize parameters for EPM
     [UInt32]$cbNeeded = 0
-    [Win32.psapi]::EnumProcessModulesEx($hProcess, $null, 0, [ref]$cbNeeded, $ModuleType)
+    $null = [Win32.psapi]::EnumProcessModulesEx($hProcess, $null, 0, [ref]$cbNeeded, $ModuleType)
     [UInt64]$ArraySize = $cbNeeded / [IntPtr]::Size
 
     $hModules = New-Object IntPtr[]($ArraySize)
 
     $cb = $cbNeeded;
-    [Win32.psapi]::EnumProcessModulesEx($hProcess, $hModules, $cb, [ref]$cbNeeded, $ModuleType);
+    $null = [Win32.psapi]::EnumProcessModulesEx($hProcess, $hModules, $cb, [ref]$cbNeeded, $ModuleType);
     for ($i = 0; $i -lt $ArraySize; $i++)
     {
         $ModInfo = New-Object MODULE_INFO
