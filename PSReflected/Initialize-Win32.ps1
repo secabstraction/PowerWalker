@@ -15,14 +15,14 @@ Optional Dependencies: None
     # ENUMS #
     #########
 
-    $ImageFileMachine = 
+    $ImageFileMachine = `
     psenum $Mod ImageFileMachine Int32 @{
         I386 =  0x014c
         IA64 =  0x0200
         AMD64 = 0x8664
     }
 
-    $ProcessAccess = 
+    $ProcessAccess = `
     psenum $Mod ProcessAccess Int32 @{
         None = 0
         Terminate =               0x000001
@@ -35,7 +35,7 @@ Optional Dependencies: None
         All =                     0x1F0FFF
     }
 
-    $ThreadAccess = 
+    $ThreadAccess = `
     psenum $Mod ThreadAccess Int32 @{
         None = 0
         Terminate =               0x000001
@@ -52,7 +52,7 @@ Optional Dependencies: None
         All =                     0x1F03FF
     }
 
-    $X86ContextFlags = 
+    $X86ContextFlags = `
     psenum $Mod X86ContextFlags UInt32 @{
         None = 0
         Context =           0x10000
@@ -66,7 +66,7 @@ Optional Dependencies: None
         All =               0x1003F
     }
     
-    $AMD64ContextFlags = 
+    $AMD64ContextFlags = `
     psenum $Mod AMD64ContextFlags UInt32 @{   
         None = 0
         Context =        0x100000
@@ -79,7 +79,7 @@ Optional Dependencies: None
         All =            0x10003B
     }
     
-    $IA64ContextFlags = 
+    $IA64ContextFlags = `
     psenum $Mod IA64ContextFlags UInt64 @{    
         None = 0
         Context =             0x80000
@@ -94,7 +94,7 @@ Optional Dependencies: None
         All =                 0x8003D
     }
 
-    $AddressMode = 
+    $AddressMode = `
     psenum $Mod AddressMode UInt32 @{
         _1616 = 0
         _1632 = 1
@@ -102,7 +102,7 @@ Optional Dependencies: None
         _Flat = 3
     }
 
-    $ListModules = 
+    $ListModules = `
     psenum $Mod ListModules UInt32 @{
         Default = 0
         _32Bit =  1
@@ -110,7 +110,7 @@ Optional Dependencies: None
         All =     3
     }
 
-    $ProcessorArch = 
+    $ProcessorArch = `
     psenum $Mod ProcessorArch UInt16 @{
         INTEL =   0
         MIPS =    1
@@ -128,14 +128,14 @@ Optional Dependencies: None
     # STRUCTS #
     ###########
 
-    $MODULE_INFO = 
+    $MODULE_INFO = `
     struct $Mod MODULE_INFO @{
         lpBaseOfDll = field 0 IntPtr
         SizeOfImage = field 1 UInt32
         EntryPoint = field 2 IntPtr
     }
 
-    $SYSTEM_INFO = 
+    $SYSTEM_INFO = `
     struct $Mod SYSTEM_INFO @{
         ProcessorArchitecture = field 0 $ProcessorArch
         Reserved = field 1 Int16
@@ -150,13 +150,13 @@ Optional Dependencies: None
         ProcessorRevision = field 10 Int16
     }
 
-    $FLOAT128 = 
+    $FLOAT128 = `
     struct $Mod FLOAT128 @{
         LowPart =  field 0 Int64
         HighPart = field 1 Int64
     }
 
-    $FLOATING_SAVE_AREA = 
+    $FLOATING_SAVE_AREA = `
     struct $Mod FLOATING_SAVE_AREA @{
         ControlWord =   field 0 UInt32
         StatusWord =    field 1 UInt32
@@ -169,7 +169,7 @@ Optional Dependencies: None
         Cr0NpxState =   field 8 UInt32
     }
 
-    $X86_CONTEXT = 
+    $X86_CONTEXT = `
     struct $Mod X86_CONTEXT @{
         
         ContextFlags = field 0 UInt32 #set this to an appropriate value
@@ -211,7 +211,7 @@ Optional Dependencies: None
         ExtendedRegisters = field 24 Byte[] -MarshalAs @('ByValArray', 512)
     }
 
-    $AMD64_CONTEXT = 
+    $AMD64_CONTEXT = `
     struct $Mod AMD64_CONTEXT -ExplicitLayout @{
         
         # Register Parameter Home Addresses
@@ -296,7 +296,7 @@ Optional Dependencies: None
         LastExceptionFromRip = field 60 UInt64 -Offset 0x4c8
     }
 
-    $IA64_CONTEXT = 
+    $IA64_CONTEXT = `
     struct $Mod IA64_CONTEXT -ExplicitLayout @{
         
         ContextFlags = field 0 UInt64 -Offset 0x000 
@@ -535,7 +535,7 @@ Optional Dependencies: None
         UNUSEDPACK = field 206 UInt64 -Offset 0xa68  # alignment padding
     }
 
-    $KDHELP = 
+    $KDHELP = `
     struct $Mod KDHELP @{
         Thread = field 0 UInt64
         ThCallbackStack = field 1 UInt32
@@ -551,14 +551,14 @@ Optional Dependencies: None
         Reserved = field 0 UInt64[] -MarshalAs @('ByValArray', 5)
     }
 
-    $ADDRESS64 = 
+    $ADDRESS64 = `
     struct $Mod ADDRESS64 @{
         Offset = field 0 UInt64
         Segment = field 1 UInt16
         Mode = field 2 AddressMode
     }
 
-    $STACKFRAME64 = 
+    $STACKFRAME64 = `
     struct $Mod STACKFRAME64 @{
         AddrPC = field 0 ADDRESS64                                 #Program Counter EIP, RIP
         AddrReturn = field 1 ADDRESS64                             #Return Address
@@ -573,7 +573,7 @@ Optional Dependencies: None
         KdHelp = field 10 KDHELP                                   #specifies helper data for walking kernel callback frames
     }
 
-    $IMAGEHLP_SYMBOLW64 = 
+    $IMAGEHLP_SYMBOLW64 = `
     struct $Mod IMAGEHLP_SYMBOLW64 @{
         SizeOfStruct = field 0 UInt32                                 # set to sizeof(IMAGEHLP_SYMBOLW64)
         Address = field 1 UInt64                                      # virtual address including dll base address
@@ -614,7 +614,7 @@ Optional Dependencies: None
         (func dbghelp SymGetModuleBase64 ([UInt64]) @([IntPtr], [UInt64]) -SetLastError),
         (func dbghelp SymGetSymFromAddr64 ([Bool]) @([IntPtr], [UInt64], [UInt64].MakeByRefType(), [IntPtr]) -SetLastError),
         (func dbghelp SymLoadModuleEx ([UInt64]) @([IntPtr], [IntPtr], [String], [String], [IntPtr], [Int32], [IntPtr], [Int32]) -SetLastError),
-        (func dbghelp StackWalk64 ([Bool]) @([UInt32], [IntPtr], [IntPtr], [IntPtr], [IntPtr], [MulticastDelegate], [Func`3], [Func`3], [MulticastDelegate]))
+        (func dbghelp StackWalk64 ([Bool]) @([UInt32], [IntPtr], [IntPtr], [IntPtr], [IntPtr], [MulticastDelegate], [MulticastDelegate], [MulticastDelegate], [MulticastDelegate]))
     )
     $FunctionDefinitions | Add-Win32Type -Module $Mod -Namespace 'Win32'    
 }
