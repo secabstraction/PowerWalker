@@ -9,9 +9,9 @@ function Get-SymbolFromAddress ($hProcess, $Address) {
     [System.Runtime.InteropServices.Marshal]::StructureToPtr($Symbol, $lpSymbol, $false)
     [UInt64]$Offset = 0
 
-    [Win32.dbgHelp]::SymGetSymFromAddr64($hProcess, $Address, [ref]$Offset, $lpSymbol)
+    $null = [Win32.dbgHelp]::SymGetSymFromAddr64($hProcess, $Address, [ref]$Offset, $lpSymbol)
             
-    $Symbol = [IMAGEHLP_SYMBOL64][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpSymbol, [IMAGEHLP_SYMBOL64])
+    $Symbol = [IMAGEHLP_SYMBOLW64][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpSymbol, [Type][IMAGEHLP_SYMBOLW64])
     [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpSymbol)
 
     return $Symbol
