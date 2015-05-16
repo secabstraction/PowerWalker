@@ -1,3 +1,32 @@
+#Function written by Matt Graeber, Twitter: @mattifestation, Blog: http://www.exploit-monday.com/
+function Get-DelegateType
+{
+	Param
+	(
+	    [OutputType([Type])]
+	        
+	    [Parameter( Position = 0)]
+	    [Type[]]
+	    $Parameters = (New-Object Type[](0)),
+	        
+	    [Parameter( Position = 1 )]
+	    [Type]
+	    $ReturnType = [Void]
+	)
+
+	$Domain = [AppDomain]::CurrentDomain
+	$DynAssembly = New-Object System.Reflection.AssemblyName('ReflectedDelegate')
+	$AssemblyBuilder = $Domain.DefineDynamicAssembly($DynAssembly, [System.Reflection.Emit.AssemblyBuilderAccess]::Run)
+	$ModuleBuilder = $AssemblyBuilder.DefineDynamicModule('InMemoryModule', $false)
+	$TypeBuilder = $ModuleBuilder.DefineType('MyDelegateType', 'Class, Public, Sealed, AnsiClass, AutoClass', [System.MulticastDelegate])
+	$ConstructorBuilder = $TypeBuilder.DefineConstructor('RTSpecialName, HideBySig, Public', [System.Reflection.CallingConventions]::Standard, $Parameters)
+	$ConstructorBuilder.SetImplementationFlags('Runtime, Managed')
+	$MethodBuilder = $TypeBuilder.DefineMethod('Invoke', 'Public, HideBySig, NewSlot, Virtual', $ReturnType, $Parameters)
+	$MethodBuilder.SetImplementationFlags('Runtime, Managed')
+	    
+	Write-Output $TypeBuilder.CreateType()
+}
+
 function Convert-UIntToInt
 {
 	Param(
@@ -23,8 +52,13 @@ Optional Dependencies: None
 #>
 
     #StackWalk64 Callback Delegates
-    $SymFunctionTableAccess64Delegate = [Func[IntPtr, UInt64, IntPtr]] { param([IntPtr]$hProcess, [UInt64]$AddrBase); [Win32.dbghelp]::SymFunctionTableAccess64($hProcess, $AddrBase) }
-    $SymGetModuleBase64Delegate = [Func[IntPtr, UInt64, UInt64]] { param([IntPtr]$hProcess, [UInt64]$Address); [Win32.dbghelp]::SymGetModuleBase64($hProceess, $Address) }
+    $SymFunctionTableAccess64Delegate = Get-DelegateType @([IntPtr], [UInt64]) ([IntPtr])
+    $Action = { Param([IntPtr]$hProcess, [UInt64]$AddrBase); [Win32.dbghelp]::SymFunctionTableAccess64($hProcess, $AddrBase) }
+    $FunctionTableAccess = $Action -as $SymFunctionTableAccess64Delegate
+
+    $SymGetModuleBase64Delegate = Get-DelegateType @([IntPtr], [UInt64]) ([UInt64])
+    $Action = { Param([IntPtr]$hProcess, [UInt64]$Address); [Win32.dbghelp]::SymGetModuleBase64($hProcess, $Address) }
+    $GetModuleBase = $Action -as $SymGetModuleBase64Delegate
 
     $lpContextRecord = New-Object IntPtr
     $Stackframe = New-Object STACKFRAME64
@@ -33,13 +67,13 @@ Optional Dependencies: None
     $hProcess = [Win32.kernel32]::OpenProcess([ProcessAccess]::All, $false, $ProcessId)
     $hThread = [Win32.kernel32]::OpenThread([ThreadAccess]::All, $false, $ThreadId)
 
-    [Win32.dbghelp]::SymInitialize($hProcess, $null, $false)
+    $null = [Win32.dbghelp]::SymInitialize($hProcess, $null, $false)
 
     $Wow64 = $false
     $SysInfo = New-Object SYSTEM_INFO
     [Win32.kernel32]::GetNativeSystemInfo([ref] $SysInfo)
 
-    if ($SysInfo.ProcessorArchitecture -ne [ProcessorArch]::INTEL) { [Win32.kernel32]::IsWow64Process($hProcess, [ref]$Wow64) }
+    if ($SysInfo.ProcessorArchitecture -ne [ProcessorArch]::INTEL) { $null = [Win32.kernel32]::IsWow64Process($hProcess, [ref]$Wow64) }
 
     if ($Wow64)
     {
@@ -52,8 +86,8 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        [Win32.kernel32]::Wow64SuspendThread($hThread)
-        [Win32.kernel32]::Wow64GetThreadContext($hThread, $lpContextRecord)
+        $null = [Win32.kernel32]::Wow64SuspendThread($hThread)
+        $null = [Win32.kernel32]::Wow64GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][X86_CONTEXT])
         $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp (New-Object UInt64)
@@ -70,8 +104,8 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        [Win32.kernel32]::SuspendThread($hThread)
-        [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
+        $null = [Win32.kernel32]::SuspendThread($hThread)
+        $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][X86_CONTEXT])
         $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp (New-Object UInt64)
@@ -88,8 +122,8 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([AMD64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        [Win32.kernel32]::SuspendThread($hThread)
-        [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
+        $null = [Win32.kernel32]::SuspendThread($hThread)
+        $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [AMD64_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][AMD64_CONTEXT])
         $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.Rip $ContextRecord.Rsp $ContextRecord.Rsp (New-Object UInt64)
@@ -106,8 +140,8 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([IA64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        [Win32.kernel32]::SuspendThread($hThread)
-        [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
+        $null = [Win32.kernel32]::SuspendThread($hThread)
+        $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [IA64_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][IA64_CONTEXT])
         $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.StIIP $ContextRecord.IntSp $ContextRecord.RsBSP $ContextRecord.IntSp
@@ -120,17 +154,33 @@ Optional Dependencies: None
     for ($i = 0; ; $i++)
     {
         #Get Stack frame
-        [Win32.dbghelp]::StackWalk64($ImageType, $hProcess, $hThread, $lpStackFrame, $lpContextRecord, $null, $SymFunctionTableAccess64Delegate, $SymGetModuleBase64Delegate, $null)
+        $null = [Win32.dbghelp]::StackWalk64($ImageType, $hProcess, $hThread, $lpStackFrame, $lpContextRecord, $null, $FunctionTableAccess, $GetModuleBase, $null)
         $Stackframe = [STACKFRAME64][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpStackFrame, [Type][STACKFRAME64])
 
         if ($Stackframe.AddrReturn.Offset -eq 0) { break } #End of stack reached
 
-        $ModulePath = New-Object System.Text.StringBuilder(256)
-
-        [Win32.psapi]::GetMappedFileNameW($hProcess, (Convert-UIntToInt $Stackframe.AddrPC.Offset), $ModulePath, $ModulePath.Capacity) 
-        $ModulePath = $ModulePath.ToString().TrimEnd([Byte]0)
+        $MappedFile = New-Object System.Text.StringBuilder(256)
+        $null = [Win32.psapi]::GetMappedFileNameW($hProcess, (Convert-UIntToInt $Stackframe.AddrPC.Offset), $MappedFile, $MappedFile.Capacity)
 
         $Symbol = Get-SymbolFromAddress $hProcess $Stackframe.AddrPC.Offset
-        $SymbolName = $Symbol.Name.ToString().TrimEnd([Byte]0)
+        $SymbolName = (([String]$Symbol.Name).Replace(' ','')).TrimEnd([Byte]0)
+
+        $CallStackEntry = New-Object PSObject -Property @{
+                            ThreadId = $ThreadId
+                            AddrPC = $Stackframe.AddrPC.Offset
+                            AddrReturn = $Stackframe.AddrReturn.Offset
+                            Symbol = $SymbolName
+                            MappedFile = $MappedFile
+                            }
+
+        Write-Output $CallStackEntry
     }
+
+    #Cleanup
+    $null = [Win32.dbghelp]::SymCleanup($hProcess)
+    $null = [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpStackFrame)
+    $null = [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpContextRecord)
+    $null = [Win32.kernel32]::ResumeThread($hThread)
+    $null = [Win32.kernel32]::CloseHandle($hProcess)
+    $null = [Win32.kernel32]::CloseHandle($hThread)
 }
