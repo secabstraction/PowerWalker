@@ -591,6 +591,7 @@ Optional Dependencies: None
         #Kernel32
         (func kernel32 OpenProcess ([IntPtr]) @([ProcessAccess], [Bool], [UInt32]) -SetLastError),
         (func kernel32 OpenThread ([IntPtr]) @([ThreadAccess], [Bool], [UInt32]) -SetLastError),
+        (func kernel32 TerminateThread ([Bool]) @([IntPtr], [Int32]) -SetLastError),
         (func kernel32 CloseHandle ([Bool]) @([IntPtr]) -SetLastError),
         (func kernel32 Wow64SuspendThread ([UInt32]) @([IntPtr]) -SetLastError),
         (func kernel32 SuspendThread ([UInt32]) @([IntPtr]) -SetLastError),
