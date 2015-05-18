@@ -73,8 +73,8 @@ Optional Dependencies: None
                 [Win32.dbghelp]::SymGetModuleBase64($hProcess, $Address) }
     $GetModuleBase = $Action -as $SymGetModuleBase64Delegate
 
-    $lpContextRecord = New-Object IntPtr
-    $Stackframe = New-Object STACKFRAME64
+    $lpContextRecord = [Activator]::CreateInstance([IntPtr])
+    $Stackframe = [Activator]::CreateInstance([STACKFRAME64])
     [UInt32]$ImageType = 0
 
     $hProcess = [Win32.kernel32]::OpenProcess([ProcessAccess]::All, $false, $ProcessId)
@@ -83,7 +83,7 @@ Optional Dependencies: None
     $null = [Win32.dbghelp]::SymInitialize($hProcess, $null, $false)
 
     $Wow64 = $false
-    $SysInfo = New-Object SYSTEM_INFO
+    $SysInfo = [Activator]::CreateInstance([SYSTEM_INFO])
     [Win32.kernel32]::GetNativeSystemInfo([ref] $SysInfo)
 
     if ($SysInfo.ProcessorArchitecture -ne [ProcessorArch]::INTEL) { $null = [Win32.kernel32]::IsWow64Process($hProcess, [ref]$Wow64) }
@@ -94,7 +94,7 @@ Optional Dependencies: None
 
         Import-ModuleSymbols $hProcess ([ListModules]::_32Bit)
 
-        $ContextRecord = New-Object X86_CONTEXT
+        $ContextRecord = [Activator]::CreateInstance([X86_CONTEXT])
         $ContextRecord.ContextFlags = [X86ContextFlags]::All
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
@@ -103,7 +103,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::Wow64GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][X86_CONTEXT])
-        $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp (New-Object UInt64)
+        $Stackframe = Initialize-Stackframe $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp $null
     }
 
     elseif ($SysInfo.ProcessorArchitecture -eq [ProcessorArch]::INTEL)
@@ -112,7 +112,7 @@ Optional Dependencies: None
 
         Import-ModuleSymbols $hProcess ([ListModules]::_32Bit)
 
-        $ContextRecord = New-Object X86_CONTEXT
+        $ContextRecord = [Activator]::CreateInstance([X86_CONTEXT])
         $ContextRecord.ContextFlags = [X86ContextFlags]::All
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
@@ -121,7 +121,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][X86_CONTEXT])
-        $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp (New-Object UInt64)
+        $Stackframe = Initialize-Stackframe $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp $null
     }
 
     elseif ($SysInfo.ProcessorArchitecture -eq [ProcessorArch]::AMD64)
@@ -130,7 +130,7 @@ Optional Dependencies: None
 
         Import-ModuleSymbols $hProcess ([ListModules]::_64Bit)
 
-        $ContextRecord = New-Object AMD64_CONTEXT
+        $ContextRecord = [Activator]::CreateInstance([AMD64_CONTEXT])
         $ContextRecord.ContextFlags = [AMD64ContextFlags]::All
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([AMD64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
@@ -139,7 +139,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [AMD64_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][AMD64_CONTEXT])
-        $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.Rip $ContextRecord.Rsp $ContextRecord.Rsp (New-Object UInt64)
+        $Stackframe = Initialize-Stackframe $ContextRecord.Rip $ContextRecord.Rsp $ContextRecord.Rsp $null
     }
 
     elseif ($SysInfo.ProcessorArchitecture -eq [ProcessorArch]::IA64)
@@ -148,7 +148,7 @@ Optional Dependencies: None
 
         Import-ModuleSymbols $hProcess ([ListModules]::_64Bit)
 
-        $ContextRecord = New-Object IA64_CONTEXT
+        $ContextRecord = [Activator]::CreateInstance([IA64_CONTEXT])
         $ContextRecord.ContextFlags = [IA64ContextFlags]::All
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([IA64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
@@ -157,7 +157,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [IA64_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][IA64_CONTEXT])
-        $Stackframe = Initialize-Stackframe ([AddressMode]::_Flat) $ContextRecord.StIIP $ContextRecord.IntSp $ContextRecord.RsBSP $ContextRecord.IntSp
+        $Stackframe = Initialize-Stackframe $ContextRecord.StIIP $ContextRecord.IntSp $ContextRecord.RsBSP $ContextRecord.IntSp
     }
     #Marshal Stackframe to pointer
     $lpStackFrame = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([System.Runtime.InteropServices.Marshal]::SizeOf($Stackframe))
@@ -172,7 +172,7 @@ Optional Dependencies: None
 
         if ($Stackframe.AddrReturn.Offset -eq 0) { break } #End of stack reached
 
-        $MappedFile = New-Object System.Text.StringBuilder(256)
+        $MappedFile = [Activator]::CreateInstance([System.Text.StringBuilder], 256)
         $null = [Win32.psapi]::GetMappedFileNameW($hProcess, (Convert-UIntToInt $Stackframe.AddrPC.Offset), $MappedFile, $MappedFile.Capacity)
 
         $Symbol = Get-SymbolFromAddress $hProcess $Stackframe.AddrPC.Offset
