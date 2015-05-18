@@ -183,7 +183,7 @@ Optional Dependencies: None
         Dr7 = field 6 UInt32
         
         # Retrieved by CONTEXT_FLOATING_POINT
-        FloatSave = field 7 $FLOATING_SAVE_AREA
+        FloatSave = field 7 FLOATING_SAVE_AREA
         
         # Retrieved by CONTEXT_SEGMENTS
         SegGs = field 8 UInt32
@@ -255,45 +255,45 @@ Optional Dependencies: None
         R8 =  field 29 UInt64 -Offset 0xb8
         R9 =  field 30 UInt64 -Offset 0xc0
         R10 = field 31 UInt64 -Offset 0xc8
-        R11 = field 31 UInt64 -Offset 0xd0
-        R12 = field 32 UInt64 -Offset 0xd8
-        R13 = field 33 UInt64 -Offset 0xe0
-        R14 = field 34 UInt64 -Offset 0xe8
-        R15 = field 35 UInt64 -Offset 0xf0
+        R11 = field 32 UInt64 -Offset 0xd0
+        R12 = field 33 UInt64 -Offset 0xd8
+        R13 = field 34 UInt64 -Offset 0xe0
+        R14 = field 35 UInt64 -Offset 0xe8
+        R15 = field 36 UInt64 -Offset 0xf0
 
         # Program Counter
-        Rip = field 36 UInt64 -Offset 0xf8
+        Rip = field 37 UInt64 -Offset 0xf8
 
         # Floating Point State
-        FltSave = field 36 UInt64 -Offset 0x100
-        Legacy = field 37 UInt64 -Offset 0x120
-        Xmm0  = field 38 UInt64 -Offset 0x1a0
-        Xmm1  = field 39 UInt64 -Offset 0x1b0
-        Xmm2  = field 40 UInt64 -Offset 0x1c0
-        Xmm3  = field 41 UInt64 -Offset 0x1d0
-        Xmm4  = field 42 UInt64 -Offset 0x1e0
-        Xmm5  = field 43 UInt64 -Offset 0x1f0
-        Xmm6  = field 44 UInt64 -Offset 0x200
-        Xmm7  = field 45 UInt64 -Offset 0x210
-        Xmm8  = field 46 UInt64 -Offset 0x220
-        Xmm9  = field 47 UInt64 -Offset 0x230
-        Xmm10 = field 48 UInt64 -Offset 0x240
-        Xmm11 = field 49 UInt64 -Offset 0x250
-        Xmm12 = field 50 UInt64 -Offset 0x260
-        Xmm13 = field 51 UInt64 -Offset 0x270
-        Xmm14 = field 52 UInt64 -Offset 0x280
-        Xmm15 = field 53 UInt64 -Offset 0x290
+        FltSave = field 38 UInt64 -Offset 0x100
+        Legacy = field 39 UInt64 -Offset 0x120
+        Xmm0  = field 40 UInt64 -Offset 0x1a0
+        Xmm1  = field 41 UInt64 -Offset 0x1b0
+        Xmm2  = field 42 UInt64 -Offset 0x1c0
+        Xmm3  = field 43 UInt64 -Offset 0x1d0
+        Xmm4  = field 44 UInt64 -Offset 0x1e0
+        Xmm5  = field 45 UInt64 -Offset 0x1f0
+        Xmm6  = field 46 UInt64 -Offset 0x200
+        Xmm7  = field 47 UInt64 -Offset 0x210
+        Xmm8  = field 48 UInt64 -Offset 0x220
+        Xmm9  = field 49 UInt64 -Offset 0x230
+        Xmm10 = field 50 UInt64 -Offset 0x240
+        Xmm11 = field 51 UInt64 -Offset 0x250
+        Xmm12 = field 52 UInt64 -Offset 0x260
+        Xmm13 = field 53 UInt64 -Offset 0x270
+        Xmm14 = field 54 UInt64 -Offset 0x280
+        Xmm15 = field 55 UInt64 -Offset 0x290
 
         # Vector Registers
-        VectorRegister = field 54 UInt64 -Offset 0x300
-        VectorControl = field 55 UInt64 -Offset 0x4a0
+        VectorRegister = field 56 UInt64 -Offset 0x300
+        VectorControl = field 57 UInt64 -Offset 0x4a0
 
         # Special Debug Control Registers
-        DebugControl = field 56 UInt64 -Offset 0x4a8
-        LastBranchToRip = field 57 UInt64 -Offset 0x4b0
-        LastBranchFromRip = field 58 UInt64 -Offset 0x4b8
-        LastExceptionToRip = field 59 UInt64 -Offset 0x4c0
-        LastExceptionFromRip = field 60 UInt64 -Offset 0x4c8
+        DebugControl = field 58 UInt64 -Offset 0x4a8
+        LastBranchToRip = field 59 UInt64 -Offset 0x4b0
+        LastBranchFromRip = field 60 UInt64 -Offset 0x4b8
+        LastExceptionToRip = field 61 UInt64 -Offset 0x4c0
+        LastExceptionFromRip = field 62 UInt64 -Offset 0x4c8
     }
 
     $IA64_CONTEXT = `
@@ -542,13 +542,13 @@ Optional Dependencies: None
         ThCallbackBStore = field 2 UInt32
         NextCallback = field 3 UInt32
         FramePointer = field 4 UInt32
-        KiCallUserMode = field 0 UInt64
-        KeUserCallbackDispatcher = field 0 UInt64
-        SystemRangeStart = field 0 UInt64
-        KiUserExceptionDispatcher = field 0 UInt64
-        StackBase = field 0 UInt64
-        StackLimit = field 0 UInt64
-        Reserved = field 0 UInt64[] -MarshalAs @('ByValArray', 5)
+        KiCallUserMode = field 5 UInt64
+        KeUserCallbackDispatcher = field 6 UInt64
+        SystemRangeStart = field 7 UInt64
+        KiUserExceptionDispatcher = field 8 UInt64
+        StackBase = field 9 UInt64
+        StackLimit = field 10 UInt64
+        Reserved = field 11 UInt64[] -MarshalAs @('ByValArray', 5)
     }
 
     $ADDRESS64 = `
