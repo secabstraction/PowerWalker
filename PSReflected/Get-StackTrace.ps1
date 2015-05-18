@@ -102,7 +102,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::Wow64SuspendThread($hThread)
         $null = [Win32.kernel32]::Wow64GetThreadContext($hThread, $lpContextRecord)
 
-        $ContextRecord = [X86_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][X86_CONTEXT])
+        $ContextRecord = [X86_CONTEXT]$lpContextRecord
         $Stackframe = Initialize-Stackframe $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp $null
     }
 
@@ -120,7 +120,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
-        $ContextRecord = [X86_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][X86_CONTEXT])
+        $ContextRecord = [X86_CONTEXT]$lpContextRecord
         $Stackframe = Initialize-Stackframe $ContextRecord.Eip $ContextRecord.Esp $ContextRecord.Ebp $null
     }
 
@@ -138,7 +138,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
-        $ContextRecord = [AMD64_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][AMD64_CONTEXT])
+        $ContextRecord = [AMD64_CONTEXT]$lpContextRecord
         $Stackframe = Initialize-Stackframe $ContextRecord.Rip $ContextRecord.Rsp $ContextRecord.Rsp $null
     }
 
@@ -156,7 +156,7 @@ Optional Dependencies: None
         $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
-        $ContextRecord = [IA64_CONTEXT][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpContextRecord, [Type][IA64_CONTEXT])
+        $ContextRecord = [IA64_CONTEXT]$lpContextRecord
         $Stackframe = Initialize-Stackframe $ContextRecord.StIIP $ContextRecord.IntSp $ContextRecord.RsBSP $ContextRecord.IntSp
     }
     #Marshal Stackframe to pointer
@@ -168,7 +168,7 @@ Optional Dependencies: None
     {
         #Get Stack frame
         $null = [Win32.dbghelp]::StackWalk64($ImageType, $hProcess, $hThread, $lpStackFrame, $lpContextRecord, $null, $FunctionTableAccess, $GetModuleBase, $null)
-        $Stackframe = [STACKFRAME64][System.Runtime.InteropServices.Marshal]::PtrToStructure($lpStackFrame, [Type][STACKFRAME64])
+        $Stackframe = [STACKFRAME64]$lpStackFrame
 
         if ($Stackframe.AddrReturn.Offset -eq 0) { break } #End of stack reached
 
