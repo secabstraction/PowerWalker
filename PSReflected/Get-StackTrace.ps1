@@ -1,5 +1,5 @@
 #Function written by Matt Graeber, Twitter: @mattifestation, Blog: http://www.exploit-monday.com/
-function Get-DelegateType
+Function Get-DelegateType
 {
 	Param
 	(
@@ -30,16 +30,16 @@ function Get-DelegateType
 function Convert-UIntToInt
 {
 	Param(
-	[Parameter(Position = 0, Mandatory = $true)]
-	[UInt64]
-	$Value
+	    [Parameter(Position = 0, Mandatory = $true)]
+	    [UInt64]
+	    $Value
 	)
 		
 	[Byte[]]$ValueBytes = [BitConverter]::GetBytes($Value)
 	return ([BitConverter]::ToInt64($ValueBytes, 0))
 }
 
-function Get-StackTrace ($ProcessId, $ThreadId) {
+function Get-StackTrace {
 <#
 .SYNOPSIS
 
@@ -51,13 +51,26 @@ Required Dependencies: PSReflect module
 Optional Dependencies: None
 #>
 
+    Param(
+	    [Parameter(Position = 0, Mandatory = $true)]
+	    [Int32]
+	    $ProcessId,
+    
+        [Parameter(Position = 1)] 
+        [Int32]
+        $ThreadId
+	)
+
+
     #StackWalk64 Callback Delegates
     $SymFunctionTableAccess64Delegate = Get-DelegateType @([IntPtr], [UInt64]) ([IntPtr])
-    $Action = { Param([IntPtr]$hProcess, [UInt64]$AddrBase); [Win32.dbghelp]::SymFunctionTableAccess64($hProcess, $AddrBase) }
+    $Action = { Param([IntPtr]$hProcess, [UInt64]$AddrBase)
+                [Win32.dbghelp]::SymFunctionTableAccess64($hProcess, $AddrBase) }
     $FunctionTableAccess = $Action -as $SymFunctionTableAccess64Delegate
 
     $SymGetModuleBase64Delegate = Get-DelegateType @([IntPtr], [UInt64]) ([UInt64])
-    $Action = { Param([IntPtr]$hProcess, [UInt64]$Address); [Win32.dbghelp]::SymGetModuleBase64($hProcess, $Address) }
+    $Action = { Param([IntPtr]$hProcess, [UInt64]$Address)
+                [Win32.dbghelp]::SymGetModuleBase64($hProcess, $Address) }
     $GetModuleBase = $Action -as $SymGetModuleBase64Delegate
 
     $lpContextRecord = New-Object IntPtr
