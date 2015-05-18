@@ -1,15 +1,20 @@
-function Initialize-Stackframe ($AddrMode, $OffsetPC, $OffsetFrame, $OffsetStack, $OffsetBStore) {
+function Initialize-Stackframe ($OffsetPC, $OffsetFrame, $OffsetStack, $OffsetBStore) {
 
-    $StackFrame = New-Object STACKFRAME64
-    $StackFrame.AddrPC.Mode = $AddrMode
-    $StackFrame.AddrPC.Offset = $OffsetPC
-    $StackFrame.AddrReturn.Mode = $AddrMode
-    $StackFrame.AddrFrame.Mode = $AddrMode
-    $StackFrame.AddrFrame.Offset = $OffsetFrame
-    $StackFrame.AddrStack.Mode = $AddrMode
-    $StackFrame.AddrStack.Offset = $OffsetStack
-    $StackFrame.AddrBStore.Offset = $OffsetBStore
-    $StackFrame.AddrBStore.Mode = $AddrMode
+    $StackFrame = [Activator]::CreateInstance([STACKFRAME64])
+    $Addr64 = [Activator]::CreateInstance([ADDRESS64])
+    $Addr64.Mode = [AddressMode]::_Flat
+    
+    $Addr64.Offset = $OffsetPC
+    $StackFrame.AddrPC = $Addr64
+
+    $Addr64.Offset = $OffsetFrame
+    $StackFrame.AddrFrame = $Addr64
+
+    $Addr64.Offset = $OffsetStack
+    $StackFrame.AddrStack = $Addr64
+
+    $Addr64.Offset = $OffsetBStore
+    $StackFrame.AddrBStore = $Addr64
     
     return $StackFrame
 }
