@@ -39,7 +39,34 @@ function Convert-UIntToInt
 	return ([BitConverter]::ToInt64($ValueBytes, 0))
 }
 
-function Get-StackTrace {
+function Get-ProcessTrace {
+Param(
+        [Parameter(ParameterSetName = 'ByName', Position = 0)]
+        [String]
+        $Name,
+
+        [Parameter(ParameterSetName = 'ByPipe', ValueFromPipeline = $true, Position = 0)]
+        [System.Diagnostics.Process[]]
+        $Process
+     )
+        if ($PSBoundParameters['Name'])
+        {
+            foreach ($Process in ( Get-Process -Name $Name ))
+            {
+                $Process.Threads | ForEach-Object { Trace-Thread -ProcessId $Process.Id -ThreadId $_.Id }
+            }
+        }
+
+        if ($PSBoundParameters['Process'])
+        {
+            foreach ($p in $Process)
+            {
+                $p.Threads | ForEach-Object { Trace-Thread -ProcessId $p.Id -ThreadId $_.Id }
+            }
+        }
+}
+
+function Trace-Thread {
 <#
 .SYNOPSIS
 
@@ -52,15 +79,14 @@ Optional Dependencies: None
 #>
 
     Param(
-	    [Parameter(Position = 0, Mandatory = $true)]
+        [Parameter(Position = 0, Mandatory = $true)]
 	    [Int32]
 	    $ProcessId,
     
-        [Parameter(Position = 1)] 
+        [Parameter(Position = 1, Mandatory = $true)] 
         [Int32]
         $ThreadId
 	)
-
 
     #StackWalk64 Callback Delegates
     $SymFunctionTableAccess64Delegate = Get-DelegateType @([IntPtr], [UInt64]) ([IntPtr])
@@ -99,7 +125,6 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        $null = [Win32.kernel32]::Wow64SuspendThread($hThread)
         $null = [Win32.kernel32]::Wow64GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT]$lpContextRecord
@@ -117,7 +142,6 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT]$lpContextRecord
@@ -135,7 +159,6 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([AMD64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [AMD64_CONTEXT]$lpContextRecord
@@ -153,7 +176,6 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([IA64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
-        $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [IA64_CONTEXT]$lpContextRecord
@@ -179,6 +201,7 @@ Optional Dependencies: None
         $SymbolName = (([String]$Symbol.Name).Replace(' ','')).TrimEnd([Byte]0)
 
         $CallStackEntry = New-Object PSObject -Property @{
+                            ProcessId = $ProcessId
                             ThreadId = $ThreadId
                             AddrPC = $Stackframe.AddrPC.Offset
                             AddrReturn = $Stackframe.AddrReturn.Offset
@@ -193,7 +216,6 @@ Optional Dependencies: None
     $null = [Win32.dbghelp]::SymCleanup($hProcess)
     $null = [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpStackFrame)
     $null = [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpContextRecord)
-    $null = [Win32.kernel32]::ResumeThread($hThread)
     $null = [Win32.kernel32]::CloseHandle($hProcess)
     $null = [Win32.kernel32]::CloseHandle($hThread)
 }
