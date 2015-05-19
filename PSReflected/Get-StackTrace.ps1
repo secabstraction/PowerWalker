@@ -125,6 +125,7 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
+        $null = [Win32.kernel32]::Wow64SuspendThread($hThread)
         $null = [Win32.kernel32]::Wow64GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT]$lpContextRecord
@@ -142,6 +143,7 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([X86_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
+        $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [X86_CONTEXT]$lpContextRecord
@@ -159,6 +161,7 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([AMD64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
+        $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [AMD64_CONTEXT]$lpContextRecord
@@ -176,6 +179,7 @@ Optional Dependencies: None
         $lpContextRecord = [System.Runtime.InteropServices.Marshal]::AllocHGlobal([IA64_CONTEXT]::GetSize())
         [System.Runtime.InteropServices.Marshal]::StructureToPtr($ContextRecord, $lpContextRecord, $false)
 
+        $null = [Win32.kernel32]::SuspendThread($hThread)
         $null = [Win32.kernel32]::GetThreadContext($hThread, $lpContextRecord)
 
         $ContextRecord = [IA64_CONTEXT]$lpContextRecord
@@ -216,6 +220,7 @@ Optional Dependencies: None
     $null = [Win32.dbghelp]::SymCleanup($hProcess)
     $null = [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpStackFrame)
     $null = [System.Runtime.InteropServices.Marshal]::FreeHGlobal($lpContextRecord)
+    $null = [Win32.kernel32]::ResumeThread($hThread)
     $null = [Win32.kernel32]::CloseHandle($hProcess)
     $null = [Win32.kernel32]::CloseHandle($hThread)
 }
