@@ -12,11 +12,9 @@ function Export-ModuleFromMemory {
         [IntPtr] 
         $ModuleAddress,
 
-        [Parameter()] [Int] $Width = 16,
-        [Parameter()] [String] $ToFile,
-
-        [Int]
-        $PageSize = 0x1000
+        [Parameter()] 
+        [String] 
+        $ToFile
     )
 
     if (!$PSBoundParameters['hProcess']) 
@@ -24,14 +22,14 @@ function Export-ModuleFromMemory {
         $hProcess = [Win32.kernel32]::OpenProcess([ProcessAccess]::All, $false, $ProcessId)
     }
     $SystemInfo = [Activator]::CreateInstance([SYSTEM_INFO])
-    [Win32.kernel32]::GetNativeSystemInfo([ref]$SystemInfo)
+    $null = [Win32.kernel32]::GetNativeSystemInfo([ref]$SystemInfo)
     
     $MemoryInfo = [Activator]::CreateInstance([MEMORY_BASIC_INFO])
-    [Win32.kernel32]::VirtualQueryEx($hProcess, $ModuleAddress, [ref]$MemoryInfo, $SystemInfo.PageSize)
+    $null = [Win32.kernel32]::VirtualQueryEx($hProcess, $ModuleAddress, [ref]$MemoryInfo, $SystemInfo.PageSize)
 
     $BytesRead = 0
     $ByteArray = [Activator]::CreateInstance([Byte[]], [Int32]$MemoryInfo.RegionSize)
-    [Win32.kernel32]::ReadProcessMemory($hProcess, $MemoryInfo.BaseAddress, $ByteArray, $MemoryInfo.RegionSize, [ref]$BytesRead)
+    $null = [Win32.kernel32]::ReadProcessMemory($hProcess, $MemoryInfo.BaseAddress, $ByteArray, $MemoryInfo.RegionSize, [ref]$BytesRead)
 
     if($ToFile)
     {  
