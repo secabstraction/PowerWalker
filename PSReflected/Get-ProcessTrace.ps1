@@ -60,7 +60,7 @@ function Initialize-Stackframe ($OffsetPC, $OffsetFrame, $OffsetStack, $OffsetBS
 
     $StackFrame = [Activator]::CreateInstance([My.STACKFRAME64])
     $Addr64 = [Activator]::CreateInstance([My.ADDRESS64])
-    $Addr64.Mode = [AddressMode]::_Flat
+    $Addr64.Mode = [My.AddressMode]::_Flat
     
     $Addr64.Offset = $OffsetPC
     $StackFrame.AddrPC = $Addr64
