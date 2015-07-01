@@ -926,7 +926,7 @@ Optional Dependencies: None
         Dr7 = field 6 UInt32
         
         # Retrieved by CONTEXT_FLOATING_POINT
-        FloatSave = field 7 FLOATING_SAVE_AREA
+        FloatSave = field 7 $FLOATING_SAVE_AREA
         
         # Retrieved by CONTEXT_SEGMENTS
         SegGs = field 8 UInt32
@@ -1065,135 +1065,135 @@ Optional Dependencies: None
 
         # This section is specified/returned if the ContextFlags word contains
         # the flag CONTEXT_LOWER_FLOATING_POINT.
-        FltS0 = field 17 FLOAT128 -Offset 0x090 
-        FltS1 = field 18 FLOAT128 -Offset 0x0a0 
-        FltS2 = field 19 FLOAT128 -Offset 0x0b0 
-        FltS3 = field 20 FLOAT128 -Offset 0x0c0 
-        FltT0 = field 21 FLOAT128 -Offset 0x0d0 
-        FltT1 = field 22 FLOAT128 -Offset 0x0e0 
-        FltT2 = field 23 FLOAT128 -Offset 0x0f0 
-        FltT3 = field 24 FLOAT128 -Offset 0x100 
-        FltT4 = field 25 FLOAT128 -Offset 0x110 
-        FltT5 = field 26 FLOAT128 -Offset 0x120 
-        FltT6 = field 27 FLOAT128 -Offset 0x130 
-        FltT7 = field 28 FLOAT128 -Offset 0x140 
-        FltT8 = field 29 FLOAT128 -Offset 0x150 
-        FltT9 = field 30 FLOAT128 -Offset 0x160 
+        FltS0 = field 17 $FLOAT128 -Offset 0x090 
+        FltS1 = field 18 $FLOAT128 -Offset 0x0a0 
+        FltS2 = field 19 $FLOAT128 -Offset 0x0b0 
+        FltS3 = field 20 $FLOAT128 -Offset 0x0c0 
+        FltT0 = field 21 $FLOAT128 -Offset 0x0d0 
+        FltT1 = field 22 $FLOAT128 -Offset 0x0e0 
+        FltT2 = field 23 $FLOAT128 -Offset 0x0f0 
+        FltT3 = field 24 $FLOAT128 -Offset 0x100 
+        FltT4 = field 25 $FLOAT128 -Offset 0x110 
+        FltT5 = field 26 $FLOAT128 -Offset 0x120 
+        FltT6 = field 27 $FLOAT128 -Offset 0x130 
+        FltT7 = field 28 $FLOAT128 -Offset 0x140 
+        FltT8 = field 29 $FLOAT128 -Offset 0x150 
+        FltT9 = field 30 $FLOAT128 -Offset 0x160 
         
         # This section is specified/returned if the ContextFlags word contains
         # the flag CONTEXT_HIGHER_FLOATING_POINT.
-        FltS4 = field 31 FLOAT128 -Offset 0x170 
-        FltS5 = field 32 FLOAT128 -Offset 0x180 
-        FltS6 = field 33 FLOAT128 -Offset 0x190 
-        FltS7 = field 34 FLOAT128 -Offset 0x1a0 
-        FltS8 = field 35 FLOAT128 -Offset 0x1b0 
-        FltS9 = field 36 FLOAT128 -Offset 0x1c0 
-        FltS10 = field 37 FLOAT128 -Offset 0x1d0 
-        FltS11 = field 38 FLOAT128 -Offset 0x1e0 
-        FltS12 = field 39 FLOAT128 -Offset 0x1f0 
-        FltS13 = field 40 FLOAT128 -Offset 0x200 
-        FltS14 = field 41 FLOAT128 -Offset 0x210 
-        FltS15 = field 42 FLOAT128 -Offset 0x220 
-        FltS16 = field 43 FLOAT128 -Offset 0x230 
-        FltS17 = field 44 FLOAT128 -Offset 0x240
-        FltS18 = field 45 FLOAT128 -Offset 0x250 
-        FltS19 = field 46 FLOAT128 -Offset 0x260 
-        FltF32 = field 47 FLOAT128 -Offset 0x270 
-        FltF33 = field 48 FLOAT128 -Offset 0x280 
-        FltF34 = field 49 FLOAT128 -Offset 0x290 
-        FltF35 = field 50 FLOAT128 -Offset 0x2a0 
-        FltF36 = field 51 FLOAT128 -Offset 0x2b0 
-        FltF37 = field 52 FLOAT128 -Offset 0x2c0 
-        FltF38 = field 53 FLOAT128 -Offset 0x2d0 
-        FltF39 = field 54 FLOAT128 -Offset 0x2e0 
-        FltF40 = field 55 FLOAT128 -Offset 0x2f0 
-        FltF41 = field 56 FLOAT128 -Offset 0x300 
-        FltF42 = field 57 FLOAT128 -Offset 0x310 
-        FltF43 = field 58 FLOAT128 -Offset 0x320 
-        FltF44 = field 59 FLOAT128 -Offset 0x330 
-        FltF45 = field 60 FLOAT128 -Offset 0x340 
-        FltF46 = field 61 FLOAT128 -Offset 0x350 
-        FltF47 = field 62 FLOAT128 -Offset 0x360 
-        FltF48 = field 63 FLOAT128 -Offset 0x370 
-        FltF49 = field 64 FLOAT128 -Offset 0x380 
-        FltF50 = field 65 FLOAT128 -Offset 0x390 
-        FltF51 = field 66 FLOAT128 -Offset 0x3a0 
-        FltF52 = field 67 FLOAT128 -Offset 0x3b0 
-        FltF53 = field 68 FLOAT128 -Offset 0x3c0 
-        FltF54 = field 69 FLOAT128 -Offset 0x3d0 
-        FltF55 = field 70 FLOAT128 -Offset 0x3e0 
-        FltF56 = field 71 FLOAT128 -Offset 0x3f0 
-        FltF57 = field 72 FLOAT128 -Offset 0x400 
-        FltF58 = field 73 FLOAT128 -Offset 0x410 
-        FltF59 = field 74 FLOAT128 -Offset 0x420 
-        FltF60 = field 75 FLOAT128 -Offset 0x430 
-        FltF61 = field 76 FLOAT128 -Offset 0x440 
-        FltF62 = field 77 FLOAT128 -Offset 0x450 
-        FltF63 = field 78 FLOAT128 -Offset 0x460 
-        FltF64 = field 79 FLOAT128 -Offset 0x470 
-        FltF65 = field 80 FLOAT128 -Offset 0x480 
-        FltF66 = field 81 FLOAT128 -Offset 0x490 
-        FltF67 = field 82 FLOAT128 -Offset 0x4a0 
-        FltF68 = field 83 FLOAT128 -Offset 0x4b0 
-        FltF69 = field 84 FLOAT128 -Offset 0x4c0 
-        FltF70 = field 85 FLOAT128 -Offset 0x4d0 
-        FltF71 = field 86 FLOAT128 -Offset 0x4e0 
-        FltF72 = field 87 FLOAT128 -Offset 0x4f0 
-        FltF73 = field 88 FLOAT128 -Offset 0x500 
-        FltF74 = field 89 FLOAT128 -Offset 0x510 
-        FltF75 = field 90 FLOAT128 -Offset 0x520 
-        FltF76 = field 91 FLOAT128 -Offset 0x530 
-        FltF77 = field 92 FLOAT128 -Offset 0x540 
-        FltF78 = field 93 FLOAT128 -Offset 0x550 
-        FltF79 = field 94 FLOAT128 -Offset 0x560 
-        FltF80 = field 95 FLOAT128 -Offset 0x570 
-        FltF81 = field 96 FLOAT128 -Offset 0x580 
-        FltF82 = field 97 FLOAT128 -Offset 0x590 
-        FltF83 = field 98 FLOAT128 -Offset 0x5a0 
-        FltF84 = field 99 FLOAT128 -Offset 0x5b0 
-        FltF85 = field 100 FLOAT128 -Offset 0x5c0 
-        FltF86 = field 101 FLOAT128 -Offset 0x5d0 
-        FltF87 = field 102 FLOAT128 -Offset 0x5e0 
-        FltF88 = field 103 FLOAT128 -Offset 0x5f0 
-        FltF89 = field 104 FLOAT128 -Offset 0x600 
-        FltF90 = field 105 FLOAT128 -Offset 0x610 
-        FltF91 = field 106 FLOAT128 -Offset 0x620 
-        FltF92 = field 107 FLOAT128 -Offset 0x630 
-        FltF93 = field 108 FLOAT128 -Offset 0x640 
-        FltF94 = field 109 FLOAT128 -Offset 0x650 
-        FltF95 = field 110 FLOAT128 -Offset 0x660 
-        FltF96 = field 111 FLOAT128 -Offset 0x670 
-        FltF97 = field 112 FLOAT128 -Offset 0x680 
-        FltF98 = field 113 FLOAT128 -Offset 0x690 
-        FltF99 = field 114 FLOAT128 -Offset 0x6a0 
-        FltF100 = field 115 FLOAT128 -Offset 0x6b0 
-        FltF101 = field 116 FLOAT128 -Offset 0x6c0 
-        FltF102 = field 117 FLOAT128 -Offset 0x6d0 
-        FltF103 = field 118 FLOAT128 -Offset 0x6e0 
-        FltF104 = field 119 FLOAT128 -Offset 0x6f0 
-        FltF105 = field 120 FLOAT128 -Offset 0x700 
-        FltF106 = field 121 FLOAT128 -Offset 0x710 
-        FltF107 = field 122 FLOAT128 -Offset 0x720 
-        FltF108 = field 123 FLOAT128 -Offset 0x730 
-        FltF109 = field 124 FLOAT128 -Offset 0x740 
-        FltF110 = field 125 FLOAT128 -Offset 0x750 
-        FltF111 = field 126 FLOAT128 -Offset 0x760 
-        FltF112 = field 127 FLOAT128 -Offset 0x770 
-        FltF113 = field 128 FLOAT128 -Offset 0x780 
-        FltF114 = field 129 FLOAT128 -Offset 0x790 
-        FltF115 = field 130 FLOAT128 -Offset 0x7a0 
-        FltF116 = field 131 FLOAT128 -Offset 0x7b0 
-        FltF117 = field 132 FLOAT128 -Offset 0x7c0 
-        FltF118 = field 133 FLOAT128 -Offset 0x7d0 
-        FltF119 = field 134 FLOAT128 -Offset 0x7e0 
-        FltF120 = field 135 FLOAT128 -Offset 0x7f0 
-        FltF121 = field 136 FLOAT128 -Offset 0x800 
-        FltF122 = field 137 FLOAT128 -Offset 0x810 
-        FltF123 = field 138 FLOAT128 -Offset 0x820 
-        FltF124 = field 139 FLOAT128 -Offset 0x830 
-        FltF125 = field 140 FLOAT128 -Offset 0x840 
-        FltF126 = field 141 FLOAT128 -Offset 0x850 
-        FltF127 = field 142 FLOAT128 -Offset 0x860 
+        FltS4 = field 31 $FLOAT128 -Offset 0x170 
+        FltS5 = field 32 $FLOAT128 -Offset 0x180 
+        FltS6 = field 33 $FLOAT128 -Offset 0x190 
+        FltS7 = field 34 $FLOAT128 -Offset 0x1a0 
+        FltS8 = field 35 $FLOAT128 -Offset 0x1b0 
+        FltS9 = field 36 $FLOAT128 -Offset 0x1c0 
+        FltS10 = field 37 $FLOAT128 -Offset 0x1d0 
+        FltS11 = field 38 $FLOAT128 -Offset 0x1e0 
+        FltS12 = field 39 $FLOAT128 -Offset 0x1f0 
+        FltS13 = field 40 $FLOAT128 -Offset 0x200 
+        FltS14 = field 41 $FLOAT128 -Offset 0x210 
+        FltS15 = field 42 $FLOAT128 -Offset 0x220 
+        FltS16 = field 43 $FLOAT128 -Offset 0x230 
+        FltS17 = field 44 $FLOAT128 -Offset 0x240
+        FltS18 = field 45 $FLOAT128 -Offset 0x250 
+        FltS19 = field 46 $FLOAT128 -Offset 0x260 
+        FltF32 = field 47 $FLOAT128 -Offset 0x270 
+        FltF33 = field 48 $FLOAT128 -Offset 0x280 
+        FltF34 = field 49 $FLOAT128 -Offset 0x290 
+        FltF35 = field 50 $FLOAT128 -Offset 0x2a0 
+        FltF36 = field 51 $FLOAT128 -Offset 0x2b0 
+        FltF37 = field 52 $FLOAT128 -Offset 0x2c0 
+        FltF38 = field 53 $FLOAT128 -Offset 0x2d0 
+        FltF39 = field 54 $FLOAT128 -Offset 0x2e0 
+        FltF40 = field 55 $FLOAT128 -Offset 0x2f0 
+        FltF41 = field 56 $FLOAT128 -Offset 0x300 
+        FltF42 = field 57 $FLOAT128 -Offset 0x310 
+        FltF43 = field 58 $FLOAT128 -Offset 0x320 
+        FltF44 = field 59 $FLOAT128 -Offset 0x330 
+        FltF45 = field 60 $FLOAT128 -Offset 0x340 
+        FltF46 = field 61 $FLOAT128 -Offset 0x350 
+        FltF47 = field 62 $FLOAT128 -Offset 0x360 
+        FltF48 = field 63 $FLOAT128 -Offset 0x370 
+        FltF49 = field 64 $FLOAT128 -Offset 0x380 
+        FltF50 = field 65 $FLOAT128 -Offset 0x390 
+        FltF51 = field 66 $FLOAT128 -Offset 0x3a0 
+        FltF52 = field 67 $FLOAT128 -Offset 0x3b0 
+        FltF53 = field 68 $FLOAT128 -Offset 0x3c0 
+        FltF54 = field 69 $FLOAT128 -Offset 0x3d0 
+        FltF55 = field 70 $FLOAT128 -Offset 0x3e0 
+        FltF56 = field 71 $FLOAT128 -Offset 0x3f0 
+        FltF57 = field 72 $FLOAT128 -Offset 0x400 
+        FltF58 = field 73 $FLOAT128 -Offset 0x410 
+        FltF59 = field 74 $FLOAT128 -Offset 0x420 
+        FltF60 = field 75 $FLOAT128 -Offset 0x430 
+        FltF61 = field 76 $FLOAT128 -Offset 0x440 
+        FltF62 = field 77 $FLOAT128 -Offset 0x450 
+        FltF63 = field 78 $FLOAT128 -Offset 0x460 
+        FltF64 = field 79 $FLOAT128 -Offset 0x470 
+        FltF65 = field 80 $FLOAT128 -Offset 0x480 
+        FltF66 = field 81 $FLOAT128 -Offset 0x490 
+        FltF67 = field 82 $FLOAT128 -Offset 0x4a0 
+        FltF68 = field 83 $FLOAT128 -Offset 0x4b0 
+        FltF69 = field 84 $FLOAT128 -Offset 0x4c0 
+        FltF70 = field 85 $FLOAT128 -Offset 0x4d0 
+        FltF71 = field 86 $FLOAT128 -Offset 0x4e0 
+        FltF72 = field 87 $FLOAT128 -Offset 0x4f0 
+        FltF73 = field 88 $FLOAT128 -Offset 0x500 
+        FltF74 = field 89 $FLOAT128 -Offset 0x510 
+        FltF75 = field 90 $FLOAT128 -Offset 0x520 
+        FltF76 = field 91 $FLOAT128 -Offset 0x530 
+        FltF77 = field 92 $FLOAT128 -Offset 0x540 
+        FltF78 = field 93 $FLOAT128 -Offset 0x550 
+        FltF79 = field 94 $FLOAT128 -Offset 0x560 
+        FltF80 = field 95 $FLOAT128 -Offset 0x570 
+        FltF81 = field 96 $FLOAT128 -Offset 0x580 
+        FltF82 = field 97 $FLOAT128 -Offset 0x590 
+        FltF83 = field 98 $FLOAT128 -Offset 0x5a0 
+        FltF84 = field 99 $FLOAT128 -Offset 0x5b0 
+        FltF85 = field 100 $FLOAT128 -Offset 0x5c0 
+        FltF86 = field 101 $FLOAT128 -Offset 0x5d0 
+        FltF87 = field 102 $FLOAT128 -Offset 0x5e0 
+        FltF88 = field 103 $FLOAT128 -Offset 0x5f0 
+        FltF89 = field 104 $FLOAT128 -Offset 0x600 
+        FltF90 = field 105 $FLOAT128 -Offset 0x610 
+        FltF91 = field 106 $FLOAT128 -Offset 0x620 
+        FltF92 = field 107 $FLOAT128 -Offset 0x630 
+        FltF93 = field 108 $FLOAT128 -Offset 0x640 
+        FltF94 = field 109 $FLOAT128 -Offset 0x650 
+        FltF95 = field 110 $FLOAT128 -Offset 0x660 
+        FltF96 = field 111 $FLOAT128 -Offset 0x670 
+        FltF97 = field 112 $FLOAT128 -Offset 0x680 
+        FltF98 = field 113 $FLOAT128 -Offset 0x690 
+        FltF99 = field 114 $FLOAT128 -Offset 0x6a0 
+        FltF100 = field 115 $FLOAT128 -Offset 0x6b0 
+        FltF101 = field 116 $FLOAT128 -Offset 0x6c0 
+        FltF102 = field 117 $FLOAT128 -Offset 0x6d0 
+        FltF103 = field 118 $FLOAT128 -Offset 0x6e0 
+        FltF104 = field 119 $FLOAT128 -Offset 0x6f0 
+        FltF105 = field 120 $FLOAT128 -Offset 0x700 
+        FltF106 = field 121 $FLOAT128 -Offset 0x710 
+        FltF107 = field 122 $FLOAT128 -Offset 0x720 
+        FltF108 = field 123 $FLOAT128 -Offset 0x730 
+        FltF109 = field 124 $FLOAT128 -Offset 0x740 
+        FltF110 = field 125 $FLOAT128 -Offset 0x750 
+        FltF111 = field 126 $FLOAT128 -Offset 0x760 
+        FltF112 = field 127 $FLOAT128 -Offset 0x770 
+        FltF113 = field 128 $FLOAT128 -Offset 0x780 
+        FltF114 = field 129 $FLOAT128 -Offset 0x790 
+        FltF115 = field 130 $FLOAT128 -Offset 0x7a0 
+        FltF116 = field 131 $FLOAT128 -Offset 0x7b0 
+        FltF117 = field 132 $FLOAT128 -Offset 0x7c0 
+        FltF118 = field 133 $FLOAT128 -Offset 0x7d0 
+        FltF119 = field 134 $FLOAT128 -Offset 0x7e0 
+        FltF120 = field 135 $FLOAT128 -Offset 0x7f0 
+        FltF121 = field 136 $FLOAT128 -Offset 0x800 
+        FltF122 = field 137 $FLOAT128 -Offset 0x810 
+        FltF123 = field 138 $FLOAT128 -Offset 0x820 
+        FltF124 = field 139 $FLOAT128 -Offset 0x830 
+        FltF125 = field 140 $FLOAT128 -Offset 0x840 
+        FltF126 = field 141 $FLOAT128 -Offset 0x850 
+        FltF127 = field 142 $FLOAT128 -Offset 0x860 
         
         # This section is specified/returned if the ContextFlags word contains
         # the flag CONTEXT_LOWER_FLOATING_POINT | CONTEXT_HIGHER_FLOATING_POINT | CONTEXT_CONTROL.
@@ -1298,22 +1298,22 @@ Optional Dependencies: None
     struct $Mod ADDRESS64 @{
         Offset = field 0 UInt64
         Segment = field 1 UInt16
-        Mode = field 2 AddressMode
+        Mode = field 2 $AddressMode
     }
 
     $STACKFRAME64 = `
     struct $Mod STACKFRAME64 @{
-        AddrPC = field 0 ADDRESS64                                 #Program Counter EIP, RIP
-        AddrReturn = field 1 ADDRESS64                             #Return Address
-        AddrFrame = field 2 ADDRESS64                              #Frame Pointer EBP, RBP or RDI
-        AddrStack = field 3 ADDRESS64                              #Stack Pointer ESP, RSP
-        AddrBStore = field 4 ADDRESS64                             #IA64 Backing Store RsBSP
-        FuncTableEntry = field 5 IntPtr                            #x86 = FPO_DATA struct, if none = NULL
-        Params = field 6 UInt64[] -MarshalAs @('ByValArray', 4)    #possible arguments to the function
-        Far = field 7 Bool                                         #TRUE if this is a WOW far call
-        Virtual = field 8 Bool                                     #TRUE if this is a virtual frame
-        Reserved = field 9 UInt64[] -MarshalAs @('ByValArray', 3)  #used internally by StackWalk64
-        KdHelp = field 10 KDHELP                                   #specifies helper data for walking kernel callback frames
+        AddrPC = field 0 $ADDRESS64                                 #Program Counter EIP, RIP
+        AddrReturn = field 1 $ADDRESS64                             #Return Address
+        AddrFrame = field 2 $ADDRESS64                              #Frame Pointer EBP, RBP or RDI
+        AddrStack = field 3 $ADDRESS64                              #Stack Pointer ESP, RSP
+        AddrBStore = field 4 $ADDRESS64                             #IA64 Backing Store RsBSP
+        FuncTableEntry = field 5 IntPtr                             #x86 = FPO_DATA struct, if none = NULL
+        Params = field 6 UInt64[] -MarshalAs @('ByValArray', 4)     #possible arguments to the function
+        Far = field 7 Bool                                          #TRUE if this is a WOW far call
+        Virtual = field 8 Bool                                      #TRUE if this is a virtual frame
+        Reserved = field 9 UInt64[] -MarshalAs @('ByValArray', 3)   #used internally by StackWalk64
+        KdHelp = field 10 $KDHELP                                   #specifies helper data for walking kernel callback frames
     }
 
     $IMAGEHLP_SYMBOLW64 = `
@@ -1331,23 +1331,23 @@ Optional Dependencies: None
         struct $Mod MEMORY_BASIC_INFO @{
             BaseAddress = field 0 Int32
             AllocationBase = field 1 Int32
-            AllocationProtect = field 2 MemoryPageProtection
+            AllocationProtect = field 2 $MemoryPageProtection
             RegionSize = field 3 Int32
-            State = field 4 MemoryPageState
-            Protect = field 5 MemoryPageProtection
-            Type = field 6 MemoryPageType
+            State = field 4 $MemoryPageState
+            Protect = field 5 $MemoryPageProtection
+            Type = field 6 $MemoryPageType
         }
     } else {
         $MEMORY_BASIC_INFORMATION = `
         struct $Mod MEMORY_BASIC_INFO @{
             BaseAddress = field 0 Int64
             AllocationBase = field 1 Int64
-            AllocationProtect = field 2 MemoryPageProtection
+            AllocationProtect = field 2 $MemoryPageProtection
             Alignment1 = field 3 Int32
             RegionSize = field 4 Int64
-            State = field 5 MemoryPageState
-            Protect = field 6 MemoryPageProtection
-            Type = field 7 MemoryPageType
+            State = field 5 $MemoryPageState
+            Protect = field 6 $MemoryPageProtection
+            Type = field 7 $MemoryPageType
             Alignment2 = field 8 Int32
         }
     }
@@ -1358,8 +1358,8 @@ Optional Dependencies: None
 
     $FunctionDefinitions = @(
         #Kernel32
-        (func kernel32 OpenProcess ([IntPtr]) @([ProcessAccess], [Bool], [UInt32]) -SetLastError),
-        (func kernel32 OpenThread ([IntPtr]) @([ThreadAccess], [Bool], [UInt32]) -SetLastError),
+        (func kernel32 OpenProcess ([IntPtr]) @($ProcessAccess, [Bool], [UInt32]) -SetLastError),
+        (func kernel32 OpenThread ([IntPtr]) @($ThreadAccess, [Bool], [UInt32]) -SetLastError),
         (func kernel32 TerminateThread ([Bool]) @([IntPtr], [Int32]) -SetLastError),
         (func kernel32 CloseHandle ([Bool]) @([IntPtr]) -SetLastError),
         (func kernel32 Wow64SuspendThread ([UInt32]) @([IntPtr]) -SetLastError),
@@ -1367,16 +1367,16 @@ Optional Dependencies: None
         (func kernel32 ResumeThread ([UInt32]) @([IntPtr]) -SetLastError),
         (func kernel32 Wow64GetThreadContext ([Bool]) @([IntPtr], [IntPtr]) -SetLastError),
         (func kernel32 GetThreadContext ([Bool]) @([IntPtr], [IntPtr]) -SetLastError),
-        (func kernel32 GetNativeSystemInfo ([Void]) @([SYSTEM_INFO].MakeByRefType()) -SetLastError),
+        (func kernel32 GetNativeSystemInfo ([Void]) @($SYSTEM_INFO.MakeByRefType()) -SetLastError),
         (func kernel32 IsWow64Process ([Bool]) @([IntPtr], [Bool].MakeByRefType()) -SetLastError),
         (func kernel32 ReadProcessMemory ([Bool]) @([IntPtr], [IntPtr], [Byte].MakeArrayType(), [Int32], [Int32].MakeByRefType()) -SetLastError),
-        (func kernel32 VirtualQueryEx ([Int64]) @([IntPtr], [IntPtr], [MEMORY_BASIC_INFO].MakeByRefType(), [Int32]) -SetLastError),
+        (func kernel32 VirtualQueryEx ([Int64]) @([IntPtr], [IntPtr], $MEMORY_BASIC_INFORMATION.MakeByRefType(), [Int32]) -SetLastError),
         
         #IntPtr hProcess, IntPtr lpBaseAddress, [Out, MarshalAs(UnmanagedType.AsAny)] object lpBuffer, int dwSize, [Out] int lpNumberOfBytesRead);
 
         #Psapi
         (func psapi EnumProcessModulesEx ([Bool]) @([IntPtr], [IntPtr].MakeArrayType(), [UInt32], [UInt32].MakeByRefType(), [ListModules]) -SetLastError),
-        (func psapi GetModuleInformation ([Bool]) @([IntPtr], [IntPtr], [MODULE_INFO].MakeByRefType(), [UInt32]) -SetLastError), 
+        (func psapi GetModuleInformation ([Bool]) @([IntPtr], [IntPtr], $MODULE_INFO.MakeByRefType(), [UInt32]) -SetLastError), 
         (func psapi GetModuleBaseNameW ([UInt32]) @([IntPtr], [IntPtr], [System.Text.StringBuilder], [Int32]) -Charset Unicode -SetLastError),
         (func psapi GetModuleFileNameExW ([UInt32]) @([IntPtr], [IntPtr], [System.Text.StringBuilder], [Int32]) -Charset Unicode -SetLastError),
         (func psapi GetMappedFileNameW ([UInt32]) @([IntPtr], [IntPtr], [System.Text.StringBuilder], [Int32]) -Charset Unicode -SetLastError),
