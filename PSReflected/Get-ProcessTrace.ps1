@@ -68,7 +68,7 @@ Author : Jesse Davis (@secabstraction)
             [Int]$Id
         )
         if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-            Write-Error "This script must be ran with administrative priviliges!"
+             Write-Warning "This script should be ran with administrative priviliges.
         }
         $Domain = [AppDomain]::CurrentDomain
         $DynAssembly = New-Object -TypeName System.Reflection.AssemblyName -ArgumentList ('PowerWalker')
