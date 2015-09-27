@@ -1,11 +1,10 @@
-function Get-ProcessTrace 
-{
+function Get-ProcessTrace {
 <#
 .SYNOPSIS
 Walks thread stacks of specified process(es) to help identify dll injection.
 
 .DESCRIPTION
-This commandlet uses Windows Remote Management to trace the threads of specified process(es) on remote machines.
+This commandlet uses Windows Remote Management to trace the threads of specified process(es) of remote machines.
 
 .PARAMETER ComputerName 
 Specify the hostname or IP address of a remote computer to retrieve data from.
@@ -13,7 +12,7 @@ Specify the hostname or IP address of a remote computer to retrieve data from.
 .PARAMETER Name 
 Specify name of process who's threads should be walked.
 
-.PARAMETER Id 
+.PARAMETER ID 
 Specify process Id of process who's threads should be walked.
 
 .PARAMETER CSV 
@@ -529,102 +528,71 @@ Author : Jesse Davis (@secabstraction)
     
         #endregion STRUCTS
 
-        function local:func 
-        {
-            # A helper function used to reduce typing while defining function prototypes for Add-Win32Type.
-            Param
-            (
+        function local:func {
+            # A helper function used to reduce typing while defining function prototypes for Add-Win32Type. by @mattifestation
+            Param (
                 [Parameter(Position = 0, Mandatory = $true)]
-                [String]
-                $DllName,
+                [String]$DllName,
 
                 [Parameter(Position = 1, Mandatory = $true)]
-                [string]
-                $FunctionName,
+                [string]$FunctionName,
 
                 [Parameter(Position = 2, Mandatory = $true)]
-                [Type]
-                $ReturnType,
+                [Type]$ReturnType,
 
                 [Parameter(Position = 3)]
-                [Type[]]
-                $ParameterTypes,
+                [Type[]]$ParameterTypes,
 
                 [Parameter(Position = 4)]
-                [Runtime.InteropServices.CallingConvention]
-                $NativeCallingConvention,
+                [Runtime.InteropServices.CallingConvention]$NativeCallingConvention,
 
                 [Parameter(Position = 5)]
-                [Runtime.InteropServices.CharSet]
-                $Charset,
+                [Runtime.InteropServices.CharSet]$Charset,
 
-                [Switch]
-                $SetLastError
+                [Parameter()]
+                [Switch]$SetLastError
             )
             $Properties = @{
                 DllName      = $DllName
                 FunctionName = $FunctionName
                 ReturnType   = $ReturnType
             }
-            if ($ParameterTypes) 
-            {
-                $Properties['ParameterTypes'] = $ParameterTypes
-            }
-            if ($NativeCallingConvention) 
-            {
-                $Properties['NativeCallingConvention'] = $NativeCallingConvention
-            }
-            if ($Charset) 
-            {
-                $Properties['Charset'] = $Charset
-            }
-            if ($SetLastError) 
-            {
-                $Properties['SetLastError'] = $SetLastError
-            }
+            if ($ParameterTypes) { $Properties['ParameterTypes'] = $ParameterTypes }
+            if ($NativeCallingConvention) { $Properties['NativeCallingConvention'] = $NativeCallingConvention }
+            if ($Charset) { $Properties['Charset'] = $Charset }
+            if ($SetLastError) { $Properties['SetLastError'] = $SetLastError }
             New-Object -TypeName PSObject -Property $Properties
         }
-        function local:Add-Win32Type 
-        {
+        function local:Add-Win32Type {
+            # A helper function used to reduce typing while defining function prototypes for Add-Win32Type. by @mattifestation
             [OutputType([Hashtable])]
             Param(
                 [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-                [String]
-                $DllName,
+                [String]$DllName,
 
                 [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-                [String]
-                $FunctionName,
+                [String]$FunctionName,
 
                 [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-                [Type]
-                $ReturnType,
+                [Type]$ReturnType,
 
                 [Parameter(ValueFromPipelineByPropertyName = $true)]
-                [Type[]]
-                $ParameterTypes,
+                [Type[]]$ParameterTypes,
 
                 [Parameter(ValueFromPipelineByPropertyName = $true)]
-                [Runtime.InteropServices.CallingConvention]
-                $NativeCallingConvention = [Runtime.InteropServices.CallingConvention]::StdCall,
+                [Runtime.InteropServices.CallingConvention]$NativeCallingConvention = [Runtime.InteropServices.CallingConvention]::StdCall,
 
                 [Parameter(ValueFromPipelineByPropertyName = $true)]
-                [Runtime.InteropServices.CharSet]
-                $Charset = [Runtime.InteropServices.CharSet]::Auto,
+                [Runtime.InteropServices.CharSet]$Charset = [Runtime.InteropServices.CharSet]::Auto,
 
                 [Parameter(ValueFromPipelineByPropertyName = $true)]
-                [Switch]
-                $SetLastError,
+                [Switch]$SetLastError,
 
                 [Parameter(Mandatory = $true)]
-                [ValidateScript({
-                            ($_ -is [Reflection.Emit.ModuleBuilder]) -or ($_ -is [Reflection.Assembly])
-                })]
-                $Module,
+                [ValidateScript({($_ -is [Reflection.Emit.ModuleBuilder]) -or ($_ -is [Reflection.Assembly])})]$Module,
 
                 [ValidateNotNull()]
-                [String]
-                $Namespace = ''
+                [String]$Namespace = ''
             )
             BEGIN { $TypeHash = @{} }
             PROCESS {
@@ -699,19 +667,15 @@ Author : Jesse Davis (@secabstraction)
                 return $ReturnTypes
             }
         }
-        function local:Get-DelegateType 
-        {
-            Param
-            (
+        function local:Get-DelegateType {
+            Param (
                 [OutputType([Type])]
             
                 [Parameter( Position = 0)]
-                [Type[]]
-                $Parameters = (New-Object -TypeName Type[] -ArgumentList (0)),
+                [Type[]]$Parameters = (New-Object -TypeName Type[] -ArgumentList (0)),
             
                 [Parameter( Position = 1 )]
-                [Type]
-                $ReturnType = [Void]
+                [Type]$ReturnType = [Void]
             )
             $Domain = [AppDomain]::CurrentDomain
             $DynAssembly = New-Object -TypeName System.Reflection.AssemblyName -ArgumentList ('ReflectedDelegate')
@@ -759,9 +723,8 @@ Author : Jesse Davis (@secabstraction)
         $Global:Psapi = $Types['psapi']
         $Global:Dbghelp = $Types['dbghelp']
 
-        function local:Trace-Thread 
-        {
-            Param(
+        function local:Trace-Thread {
+            Param (
                 [Parameter()]
                 [IntPtr]$ProcessHandle, 
 
@@ -772,9 +735,14 @@ Author : Jesse Davis (@secabstraction)
                 [Int]$ProcessId
             ) 
 
+            # Get Thread handle
+            if (($hThread = $Kernel32::OpenThread(0x1F03FF, $false, $ThreadId)) -eq 0) { 
+                Write-Error "Unable to open handle for thread $ThreadId." 
+                return
+            }
+
             #region HELPERS
-            function local:Get-SystemInfo 
-            {
+            function local:Get-SystemInfo {
                 $SystemInfo = [Activator]::CreateInstance($SYSTEM_INFO)
                 [void]$Kernel32::GetSystemInfo([ref]$SystemInfo)
 
@@ -823,8 +791,7 @@ Author : Jesse Davis (@secabstraction)
                 }
                 Remove-Variable hModules
             }    
-            function local:Convert-UIntToInt 
-            {
+            function local:Convert-UIntToInt {
                 Param(
                     [Parameter(Position = 0, Mandatory = $true)]
                     [UInt64]$Value
@@ -910,9 +877,6 @@ Author : Jesse Davis (@secabstraction)
             $ImageType = 0
             $Wow64 = $false
             $SystemInfo = Get-SystemInfo
-
-            # Get Thread handle
-            if (($hThread = $Kernel32::OpenThread(0x1F03FF, $false, $ThreadId)) -eq 0) { Write-Error "Unable to open handle for thread $ThreadId." }
 
             # If not x86 processor, check for Wow64 (x86) process
             if ($SystemInfo.ProcessorArchitecture -ne 0) {
