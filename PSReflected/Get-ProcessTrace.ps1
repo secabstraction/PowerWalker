@@ -5,7 +5,7 @@ function Get-ProcessTrace
 Walks thread stacks of specified process(es) to help identify dll injection.
 
 .DESCRIPTION
-This commandlet uses Windows Remote Management to trace the threads of specified process(es).
+This commandlet uses Windows Remote Management to trace the threads of specified process(es) on remote machines.
 
 .PARAMETER ComputerName 
 Specify the hostname or IP address of a remote computer to retrieve data from.
@@ -13,17 +13,11 @@ Specify the hostname or IP address of a remote computer to retrieve data from.
 .PARAMETER Name 
 Specify name of process who's threads should be walked.
 
-.PARAMETER ComputerName 
+.PARAMETER Id 
 Specify process Id of process who's threads should be walked.
-
-.PARAMETER Timeout 
-Specify timeout length, defaults to 3 seconds.
 
 .PARAMETER CSV 
 Specify path to output file, output is formatted as comma separated values.
-
-.PARAMETER TXT 
-Specify path to output file, output formatted as text.
 
 .EXAMPLE
 The following example traces the threads of all processes named svchost on the local computer and writes the output to a csv file.
